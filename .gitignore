@@ -1,0 +1,5 @@
+coverage
+coverage.json
+node_modules
+yarn-error.log
+build
