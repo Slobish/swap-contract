@@ -1,6 +1,6 @@
 const ethUtil = require('ethereumjs-util')
 const abi = require('ethereumjs-abi')
-const types = require('./types')
+const { DOMAIN_NAME, DOMAIN_VERSION, types } = require('./constants')
 
 function stringify(type) {
   let str = `${type}(`
@@ -21,40 +21,49 @@ const PARTY_TYPEHASH = web3.utils.soliditySha3(stringify('Party'))
 function hashParty(party) {
   return ethUtil.keccak256(abi.rawEncode(
     ['bytes32', 'address', 'address', 'uint256'],
-    [PARTY_TYPEHASH, party.wallet, party.token, party.param],
+    [
+      PARTY_TYPEHASH,
+      party.wallet,
+      party.token,
+      party.param,
+    ],
+  ))
+}
+
+function hashOrder(order) {
+  return ethUtil.keccak256(abi.rawEncode(
+    ['bytes32', 'uint256', 'uint256', 'address', 'bytes32', 'bytes32', 'bytes32'],
+    [
+      ORDER_TYPEHASH,
+      order.expiration,
+      order.nonce,
+      order.sender,
+      hashParty(order.maker),
+      hashParty(order.taker),
+      hashParty(order.partner),
+    ],
+  ))
+}
+
+function hashDomain(verifyingContract) {
+  return ethUtil.keccak256(abi.rawEncode(
+    ['bytes32', 'bytes32', 'bytes32', 'address'],
+    [
+      EIP712_DOMAIN_TYPEHASH,
+      ethUtil.keccak256(DOMAIN_NAME),
+      ethUtil.keccak256(DOMAIN_VERSION),
+      verifyingContract,
+    ],
   ))
 }
 
 module.exports = {
   getOrderHash(order, verifyingContract) {
-    const DOMAIN_SEPARATOR = ethUtil.keccak256(abi.rawEncode(
-      ['bytes32', 'bytes32', 'bytes32', 'address'],
-      [
-        EIP712_DOMAIN_TYPEHASH,
-        ethUtil.keccak256('AIRSWAP'),
-        ethUtil.keccak256('2'),
-        verifyingContract,
-      ],
-    ))
-
-    const ORDER_HASH = ethUtil.keccak256(abi.rawEncode(
-      ['bytes32', 'uint256', 'uint256', 'address', 'bytes32', 'bytes32', 'bytes32'],
-      [
-        ORDER_TYPEHASH,
-        order.expiration,
-        order.nonce,
-        order.sender,
-        hashParty(order.maker),
-        hashParty(order.taker),
-        hashParty(order.partner),
-      ],
-    ))
-
     return ethUtil.keccak256(
       Buffer.concat([
         Buffer.from('1901', 'hex'),
-        Buffer.from(DOMAIN_SEPARATOR, 'hex'),
-        ORDER_HASH,
+        hashDomain(verifyingContract),
+        hashOrder(order),
       ]),
     )
   },

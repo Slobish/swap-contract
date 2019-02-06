@@ -1,10 +1,4 @@
-const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
-
-const Party = {
-  wallet: NULL_ADDRESS,
-  token: NULL_ADDRESS,
-  param: 0,
-}
+const { defaults, NULL_ADDRESS } = require('./constants')
 
 function generateNonce() {
   return Math.round(Math.random() * 10000)
@@ -19,17 +13,17 @@ module.exports = {
     expiration = generateExpiration(),
     nonce = generateNonce(),
     sender = NULL_ADDRESS,
-    maker = Party,
-    taker = Party,
-    partner = Party,
+    maker = defaults.Party,
+    taker = defaults.Party,
+    partner = defaults.Party,
   }) {
     return {
       expiration,
       nonce,
       sender,
-      maker: { ...Party, ...maker },
-      taker: { ...Party, ...taker },
-      partner: { ...Party, ...partner },
+      maker: { ...defaults.Party, ...maker },
+      taker: { ...defaults.Party, ...taker },
+      partner: { ...defaults.Party, ...partner },
     }
   },
 }
