@@ -26,10 +26,10 @@ $ yarn coverage
 
 - `Swap.sol` — 
 - `lib` `/`
-  - `Events.sol` — 
-  - `Transfers.sol` —
-  - `Verifier.sol` —
-  - `interfaces.sol` — 
+  - `Approvable.sol` —
+  - `Transferable.sol` —
+  - `Interfaceable.sol` — 
+  - `Validator.sol` —
 
 ## Protocol
 

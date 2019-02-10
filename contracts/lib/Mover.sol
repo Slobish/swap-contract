@@ -1,15 +1,13 @@
 pragma solidity 0.5.0;
 
-import "./Interfaces.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/IERC721.sol";
 
 
-contract Transfers is Interfaces {
+contract Mover {
 
+  bytes4 internal constant ERC165ID = 0x01ffc9a7;
   bytes4 internal constant INTERFACE_ERC721 = 0x80ac58cd;
-
-  constructor () public Interfaces() {}
 
   function swap(
       address makerAddress,
@@ -48,4 +46,36 @@ contract Transfers is Interfaces {
       IERC20(token).transferFrom(from, to, param);
     }
   }
+
+  function doesContractImplementInterface(address _contract, bytes4 _interfaceId) internal view returns (bool) {
+    uint256 success;
+    uint256 result;
+
+    (success, result) = noThrowCall(_contract, _interfaceId);
+    if ((success == 1)&&(result == 1)) {
+      return true;
+    }
+    return false;
+  }
+
+  function noThrowCall(address _contract, bytes4 _interfaceId)
+      internal view returns (uint256 success, uint256 result) {
+        bytes4 erc165ID = ERC165ID;
+
+        assembly {
+            let x := mload(0x40)
+            mstore(x, erc165ID)
+            mstore(add(x, 0x04), _interfaceId)
+
+            success := staticcall(
+                                30000,
+                                _contract,
+                                x,
+                                0x24,
+                                x,
+                                0x20)
+
+            result := mload(x)
+        }
+      }
 }

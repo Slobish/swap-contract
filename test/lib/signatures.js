@@ -4,10 +4,10 @@ const { DOMAIN_NAME, DOMAIN_VERSION, types } = require('./constants')
 const hashes = require('./hashes')
 
 module.exports = {
-  async getWeb3Signature(order, verifyingContract) {
+  async getWeb3Signature(order, signer, verifyingContract) {
     const orderHash = hashes.getOrderHash(order, verifyingContract)
     const orderHashHex = ethUtil.bufferToHex(orderHash)
-    const sig = await web3.eth.sign(orderHashHex, order.maker.wallet)
+    const sig = await web3.eth.sign(orderHashHex, signer)
     const { v, r, s } = ethUtil.fromRpcSig(sig)
     return {
       r, s, v, prefixed: true,

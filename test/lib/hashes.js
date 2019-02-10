@@ -32,12 +32,13 @@ function hashParty(party) {
 
 function hashOrder(order) {
   return ethUtil.keccak256(abi.rawEncode(
-    ['bytes32', 'uint256', 'uint256', 'address', 'bytes32', 'bytes32', 'bytes32'],
+    ['bytes32', 'uint256', 'uint256', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
     [
       ORDER_TYPEHASH,
       order.expiration,
       order.nonce,
-      order.sender,
+      order.signerAddress,
+      order.senderAddress,
       hashParty(order.maker),
       hashParty(order.taker),
       hashParty(order.partner),

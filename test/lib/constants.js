@@ -11,7 +11,8 @@ module.exports = {
     Order: [
       { name: 'expiration', type: 'uint256' },
       { name: 'nonce', type: 'uint256' },
-      { name: 'sender', type: 'address' },
+      { name: 'signerAddress', type: 'address' },
+      { name: 'senderAddress', type: 'address' },
       { name: 'maker', type: 'Party' },
       { name: 'taker', type: 'Party' },
       { name: 'partner', type: 'Party' },

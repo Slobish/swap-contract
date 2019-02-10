@@ -6,6 +6,7 @@ const Collectible = artifacts.require('NonFungibleB')
 
 const truffleAssert = require('truffle-assertions')
 
+const { NULL_ADDRESS } = require('./lib/constants.js')
 const orders = require('./lib/orders.js')
 const signatures = require('./lib/signatures.js')
 const helpers = require('./lib/helpers.js')
@@ -69,7 +70,7 @@ contract('Swap', (accounts) => {
     let _signature
 
     before('Alice creates an order for Bob (200 AST for 50 DAI)', async () => {
-      _order = await orders.getOrder({
+      const { order, signature } = await orders.getOrder({
         maker: {
           wallet: aliceAddress,
           token: tokenAST.address,
@@ -80,8 +81,9 @@ contract('Swap', (accounts) => {
           token: tokenDAI.address,
           param: 50,
         },
-      })
-      _signature = await signatures.getWeb3Signature(_order, swapAddress)
+      }, aliceAddress, swapAddress)
+      _order = order
+      _signature = signature
     })
 
     it('Checks that Bob can fill an order from Alice (200 AST for 50 DAI)', async () => {
@@ -99,7 +101,7 @@ contract('Swap', (accounts) => {
     })
 
     it('Checks that Alice cannot trade more than approved (200 AST)', async () => {
-      const order = await orders.getOrder({
+      const { order, signature } = await orders.getOrder({
         maker: {
           wallet: aliceAddress,
           token: tokenAST.address,
@@ -108,13 +110,12 @@ contract('Swap', (accounts) => {
         taker: {
           wallet: bobAddress,
         },
-      })
-      const signature = await signatures.getWeb3Signature(order, swapAddress)
+      }, aliceAddress, swapAddress)
       await truffleAssert.reverts(swapContract.fill(order, signature, { from: bobAddress }), 'INSUFFICIENT_ALLOWANCE')
     })
 
     it('Checks that Bob cannot fill an expired order', async () => {
-      const order = await orders.getOrder({
+      const { order, signature } = await orders.getOrder({
         maker: {
           wallet: aliceAddress,
         },
@@ -122,26 +123,24 @@ contract('Swap', (accounts) => {
           wallet: bobAddress,
         },
         expiration: 0,
-      })
-      const signature = await signatures.getWeb3Signature(order, swapAddress)
+      }, aliceAddress, swapAddress)
       await truffleAssert.reverts(swapContract.fill(order, signature, { from: bobAddress }), 'ORDER_EXPIRED')
     })
 
     it('Checks that an incorrect signature will revert', async () => {
-      const order = await orders.getOrder({
+      const { order, signature } = await orders.getOrder({
         maker: {
           wallet: aliceAddress,
         },
         taker: {
           wallet: bobAddress,
         },
-      })
-      const signature = await signatures.getWeb3Signature(order, bobAddress)
+      }, aliceAddress, NULL_ADDRESS)
       await truffleAssert.reverts(swapContract.fill(order, signature, { from: bobAddress }), 'INVALID_SIGNATURE')
     })
 
     it('Checks that sending ether with a token trade will revert', async () => {
-      const order = await orders.getOrder({
+      const { order, signature } = await orders.getOrder({
         maker: {
           wallet: aliceAddress,
         },
@@ -149,13 +148,12 @@ contract('Swap', (accounts) => {
           wallet: bobAddress,
           token: tokenAST.address,
         },
-      })
-      const signature = await signatures.getWeb3Signature(order, swapAddress)
+      }, aliceAddress, swapAddress)
       await truffleAssert.reverts(swapContract.fill(order, signature, { from: bobAddress, value: 1 }), 'VALUE_MUST_BE_ZERO')
     })
 
     it('Checks that Bob can not trade more than he holds', async () => {
-      const order = await orders.getOrder({
+      const { order, signature } = await orders.getOrder({
         maker: {
           wallet: bobAddress,
           token: tokenDAI.address,
@@ -164,8 +162,7 @@ contract('Swap', (accounts) => {
         taker: {
           wallet: aliceAddress,
         },
-      })
-      const signature = await signatures.getWeb3Signature(order, swapAddress)
+      }, bobAddress, swapAddress)
       await truffleAssert.reverts(swapContract.fill(order, signature, { from: aliceAddress }), 'INSUFFICIENT_BALANCE')
     })
 
@@ -175,33 +172,42 @@ contract('Swap', (accounts) => {
     })
 
     it('Checks that Carol cannot send an order where Bob is the sender', async () => {
-      const order = await orders.getOrder({
-        sender: bobAddress,
+      const { order, signature } = await orders.getOrder({
+        senderAddress: bobAddress,
         maker: {
           wallet: aliceAddress,
         },
-      })
-      const signature = await signatures.getWeb3Signature(order, swapAddress)
-      await truffleAssert.reverts(swapContract.fill(order, signature, { from: carolAddress }), 'INCORRECT_SENDER')
+      }, aliceAddress, swapAddress)
+      await truffleAssert.reverts(swapContract.fill(order, signature, { from: carolAddress }), 'SENDER_NOT_AUTHORIZED')
     })
 
     it('Checks that Carol cannot send an order where Bob is the sender', async () => {
-      const order = await orders.getOrder({
+      const { order, signature } = await orders.getOrder({
         maker: {
           wallet: aliceAddress,
         },
-      })
-      const signature = await signatures.getWeb3Signature(order, swapAddress)
+      }, aliceAddress, swapAddress)
       await truffleAssert.reverts(swapContract.fill(order, signature, { from: carolAddress }), 'TAKER_MUST_BE_SENDER')
     })
 
     it('Alice approves Swap to spend another 50 AST', async () => {
       truffleAssert.eventEmitted(await tokenAST.approve(swapAddress, 50, { from: aliceAddress }), 'Approval')
     })
+  })
 
-    it('Checks that Bob can fill an order where Bob is the sender', async () => {
-      const order = await orders.getOrder({
-        sender: bobAddress,
+  describe('Signer Delegation (Maker)', () => {
+    it('Alice authorizes Carol to sign orders on her behalf', async () => {
+      const expiration = Math.round((new Date().getTime() + 60000) / 1000)
+      truffleAssert.eventEmitted(await swapContract.authorize(carolAddress, expiration, { from: aliceAddress }), 'Authorization')
+    })
+
+    it('Alice approves Swap to spend another 50 AST', async () => {
+      truffleAssert.eventEmitted(await tokenAST.approve(swapAddress, 50, { from: aliceAddress }), 'Approval')
+    })
+
+    it('Checks that Carol can sign orders on behalf of Alice', async () => {
+      const { order, signature } = await orders.getOrder({
+        signerAddress: carolAddress,
         maker: {
           wallet: aliceAddress,
           token: tokenAST.address,
@@ -212,9 +218,36 @@ contract('Swap', (accounts) => {
           token: tokenDAI.address,
           param: 10,
         },
-      })
-      const signature = await signatures.getWeb3Signature(order, swapAddress)
+      }, carolAddress, swapAddress)
       truffleAssert.eventEmitted(await swapContract.fill(order, signature, { from: bobAddress }), 'Fill')
+    })
+
+    it('Alice revokes signing authorization from Carol', async () => {
+      truffleAssert.eventEmitted(await swapContract.revoke(carolAddress, { from: aliceAddress }), 'Revocation')
+    })
+
+    it('Checks that Carol can no longer sign orders on behalf of Alice', async () => {
+      const { order, signature } = await orders.getOrder({
+        signerAddress: carolAddress,
+        maker: {
+          wallet: aliceAddress,
+          token: tokenAST.address,
+          param: 50,
+        },
+        taker: {
+          wallet: bobAddress,
+          token: tokenDAI.address,
+          param: 10,
+        },
+      }, carolAddress, swapAddress)
+      await truffleAssert.reverts(swapContract.fill(order, signature, { from: bobAddress }), 'SIGNER_NOT_AUTHORIZED')
+    })
+  })
+
+  describe('Sender Delegation (Taker)', () => {
+    it('Bob approves Carol to take orders on his behalf', async () => {
+      const expiration = Math.round((new Date().getTime() + 60000) / 1000)
+      truffleAssert.eventEmitted(await swapContract.authorize(carolAddress, expiration, { from: bobAddress }), 'Authorization')
     })
   })
 
@@ -223,13 +256,14 @@ contract('Swap', (accounts) => {
     let _signature
 
     before('Alice creates an order for nonce "12345"', async () => {
-      _order = await orders.getOrder({
+      const { order, signature } = await orders.getOrder({
         maker: {
           wallet: aliceAddress,
         },
         nonce: 12345,
-      })
-      _signature = await signatures.getWeb3Signature(_order, swapAddress)
+      }, aliceAddress, swapAddress)
+      _order = order
+      _signature = signature
     })
 
     it('Checks that Alice is able to cancel order with nonce "12345"', async () => {
@@ -262,7 +296,7 @@ contract('Swap', (accounts) => {
     })
 
     it('Checks that Bob cannot fill an order for ETH without sending ether', async () => {
-      const order = await orders.getOrder({
+      const { order, signature } = await orders.getOrder({
         maker: {
           wallet: aliceAddress,
         },
@@ -270,13 +304,12 @@ contract('Swap', (accounts) => {
           wallet: bobAddress,
           param: value,
         },
-      })
-      const signature = await signatures.getWeb3Signature(order, swapAddress)
+      }, aliceAddress, swapAddress)
       await truffleAssert.reverts(swapContract.fill(order, signature, { from: bobAddress }), 'VALUE_MUST_BE_SENT')
     })
 
     it('Checks that Bob can fill an order for ETH from Alice (200 AST for 1 ETH)', async () => {
-      const order = await orders.getOrder({
+      const { order, signature } = await orders.getOrder({
         maker: {
           wallet: aliceAddress,
           token: tokenAST.address,
@@ -286,8 +319,7 @@ contract('Swap', (accounts) => {
           wallet: bobAddress,
           param: value,
         },
-      })
-      const signature = await signatures.getWeb3Signature(order, swapAddress)
+      }, aliceAddress, swapAddress)
       truffleAssert.eventEmitted(await swapContract.fill(order, signature, { from: bobAddress, value }), 'Fill')
     })
 
@@ -296,7 +328,7 @@ contract('Swap', (accounts) => {
     })
 
     it('Checks that Bob can not accidentally send ether with a fill', async () => {
-      const order = await orders.getOrder({
+      const { order, signature } = await orders.getOrder({
         maker: {
           wallet: aliceAddress,
         },
@@ -304,8 +336,7 @@ contract('Swap', (accounts) => {
           wallet: bobAddress,
           token: tokenAST.address,
         },
-      })
-      const signature = await signatures.getWeb3Signature(order, swapAddress)
+      }, aliceAddress, swapAddress)
       await truffleAssert.reverts(swapContract.fill(order, signature, { from: bobAddress, value }), 'VALUE_MUST_BE_ZERO')
     })
 
@@ -321,7 +352,7 @@ contract('Swap', (accounts) => {
     })
 
     it('Checks that Carol gets paid 50 AST for facilitating a trade between Alice and Bob', async () => {
-      const order = await orders.getOrder({
+      const { order, signature } = await orders.getOrder({
         maker: {
           wallet: aliceAddress,
           token: tokenAST.address,
@@ -337,8 +368,7 @@ contract('Swap', (accounts) => {
           token: tokenAST.address,
           param: 50,
         },
-      })
-      const signature = await signatures.getWeb3Signature(order, swapAddress)
+      }, aliceAddress, swapAddress)
       truffleAssert.eventEmitted(await swapContract.fill(order, signature, { from: bobAddress }), 'Fill')
     })
 
@@ -371,13 +401,13 @@ contract('Swap', (accounts) => {
     })
   })
 
-  describe('Fills (Fungible)', () => {
+  describe('Fills (Non-Fungible)', () => {
     it('Alice approves Swap to transfer her concert ticket', async () => {
       truffleAssert.eventEmitted(await tokenTicket.approve(swapAddress, 12345, { from: aliceAddress }), 'Approval')
     })
 
     it('Bob buys Ticket #12345 from Alice for 1 DAI', async () => {
-      const order = await orders.getOrder({
+      const { order, signature } = await orders.getOrder({
         maker: {
           wallet: aliceAddress,
           token: tokenTicket.address,
@@ -388,8 +418,7 @@ contract('Swap', (accounts) => {
           token: tokenDAI.address,
           param: 100,
         },
-      })
-      const signature = await signatures.getWeb3Signature(order, swapAddress)
+      }, aliceAddress, swapAddress)
       truffleAssert.eventEmitted(await swapContract.fill(order, signature, { from: bobAddress }), 'Fill')
     })
 
@@ -402,7 +431,7 @@ contract('Swap', (accounts) => {
     })
 
     it('Alice buys Kitty #54321 from Bob for 100 AST', async () => {
-      const order = await orders.getOrder({
+      const { order, signature } = await orders.getOrder({
         maker: {
           wallet: aliceAddress,
           token: tokenAST.address,
@@ -413,8 +442,7 @@ contract('Swap', (accounts) => {
           token: tokenKitty.address,
           param: 54321,
         },
-      })
-      const signature = await signatures.getWeb3Signature(order, swapAddress)
+      }, aliceAddress, swapAddress)
       truffleAssert.eventEmitted(await swapContract.fill(order, signature, { from: bobAddress }), 'Fill')
     })
 
@@ -433,26 +461,23 @@ contract('Swap', (accounts) => {
     })
 
     it('Checks that Carol gets paid Kitty #54321 for facilitating a trade between Alice and Bob', async () => {
-      const order = await orders.getOrder(
-        {
-          maker: {
-            wallet: aliceAddress,
-            token: tokenAST.address,
-            param: 100,
-          },
-          taker: {
-            wallet: bobAddress,
-            token: tokenDAI.address,
-            param: 50,
-          },
-          partner: {
-            wallet: carolAddress,
-            token: tokenKitty.address,
-            param: 54321,
-          },
+      const { order, signature } = await orders.getOrder({
+        maker: {
+          wallet: aliceAddress,
+          token: tokenAST.address,
+          param: 100,
         },
-      )
-      const signature = await signatures.getWeb3Signature(order, swapAddress)
+        taker: {
+          wallet: bobAddress,
+          token: tokenDAI.address,
+          param: 50,
+        },
+        partner: {
+          wallet: carolAddress,
+          token: tokenKitty.address,
+          param: 54321,
+        },
+      }, aliceAddress, swapAddress)
       truffleAssert.eventEmitted(await swapContract.fill(order, signature, { from: bobAddress }), 'Fill')
     })
   })
@@ -462,7 +487,7 @@ contract('Swap', (accounts) => {
     const davidPrivKey = Buffer.from('4934d4ff925f39f91e3729fbce52ef12f25fdf93e014e291350f7d314c1a096b', 'hex')
 
     it('Checks that a private key signature is valid', async () => {
-      const order = orders.getOrder(
+      const { order } = await orders.getOrder(
         {
           maker: {
             wallet: davidAddress,
@@ -480,7 +505,7 @@ contract('Swap', (accounts) => {
       truffleAssert.eventEmitted(await swapContract.fill(order, signature, { from: aliceAddress }), 'Fill')
     })
     it('Checks that a typed data (EIP712) signature is valid', async () => {
-      const order = orders.getOrder(
+      const { order } = await orders.getOrder(
         {
           maker: {
             wallet: davidAddress,

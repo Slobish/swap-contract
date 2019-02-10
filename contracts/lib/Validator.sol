@@ -4,7 +4,7 @@ pragma experimental ABIEncoderV2;
 import "./Types.sol";
 
 
-contract Verifier is Types {
+contract Validator is Types {
 
   bytes constant internal EIP191_HEADER = "\x19\x01";
   bytes constant internal DOMAIN_NAME = "AIRSWAP";
@@ -38,7 +38,8 @@ contract Verifier is Types {
             ORDER_TYPEHASH,
             order.expiration,
             order.nonce,
-            order.sender,
+            order.signerAddress,
+            order.senderAddress,
             hashParty(order.maker),
             hashParty(order.taker),
             hashParty(order.partner)
@@ -46,14 +47,14 @@ contract Verifier is Types {
     ));
   }
 
-  function verify(Order memory order, Signature memory signature) public view returns (bool) {
+  function isValid(Order memory order, address signer, Signature memory signature) public view returns (bool) {
     if (signature.prefixed) {
-      return order.maker.wallet == ecrecover(
+      return signer == ecrecover(
           keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hashOrder(order))),
           signature.v, signature.r, signature.s
       );
     } else {
-      return order.maker.wallet == ecrecover(
+      return signer == ecrecover(
           hashOrder(order),
           signature.v, signature.r, signature.s
       );

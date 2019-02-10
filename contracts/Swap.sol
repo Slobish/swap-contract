@@ -1,29 +1,47 @@
 pragma solidity 0.5.0;
 pragma experimental ABIEncoderV2;
 
-import "./lib/Events.sol";
-import "./lib/Transfers.sol";
-import "./lib/Verifier.sol";
+import "./lib/Authorizer.sol";
+import "./lib/Mover.sol";
+import "./lib/Validator.sol";
 
 
 /**
 * @title Swap Protocol
 */
-contract Swap is
-    Events,
-    Transfers,
-    Verifier {
+contract Swap is Authorizer, Mover, Validator {
 
-  // Mapping of makerAddress to mapping of nonces (true = already filled).
+  // Mapping of maker address to mapping of nonces to mark fills.
   mapping (address => mapping (uint256 => bool)) public fills;
 
-  // Construct the contract and pull in mixins.
-  constructor () public Events() Transfers() Verifier() {}
+  // Event emitted on order fill.
+  event Fill(
+    address indexed makerAddress,
+    uint256 makerParam,
+    address makerToken,
+    address takerAddress,
+    uint256 takerParam,
+    address takerToken,
+    address partnerAddress,
+    uint256 partnerParam,
+    address partnerToken,
+    uint256 expiration,
+    uint256 indexed nonce
+  );
 
-/**
-  *   @param order Order
-  *   @param signature bytes
-  */
+  // Event emitted on order cancel.
+  event Cancel(
+    address indexed makerAddress,
+    uint256 nonce
+  );
+
+  // Constructs the contract and mixes in helpers.
+  constructor () public Authorizer() Mover() Validator() {}
+
+  /**
+    *   @param order Order
+    *   @param signature bytes
+    */
   function fill(Order memory order, Signature memory signature)
       public
       payable {
@@ -35,18 +53,28 @@ contract Swap is
         require(order.expiration > block.timestamp,
             "ORDER_EXPIRED");
 
-        // Check that the order has a valid signature.
-        require(verify(order, signature),
-            "INVALID_SIGNATURE");
-
         // Check that a specified sender is the actual sender.
-        // TODO: Taker should approve Sender to fill orders on its behalf.
-        if (order.sender != address(0)) {
-          require(order.sender == msg.sender,
-            "INCORRECT_SENDER");
+        if (order.senderAddress != address(0)) {
+          require(isAuthorized(order.taker.wallet, order.senderAddress),
+            "SENDER_NOT_AUTHORIZED");
+
+          require(order.senderAddress == msg.sender,
+            "INVALID_SENDER");
+        }
+
+        // Check that the order has a valid signature.
+        if (order.signerAddress != address(0)) {
+          require(isAuthorized(order.maker.wallet, order.signerAddress),
+            "SIGNER_NOT_AUTHORIZED");
+
+          require(isValid(order, order.signerAddress, signature),
+            "INVALID_SIGNER");
         } else {
           require(order.taker.wallet == msg.sender,
             "TAKER_MUST_BE_SENDER");
+
+          require(isValid(order, order.maker.wallet, signature),
+            "INVALID_SIGNATURE");
         }
 
         // Mark the order filled.

@@ -1,5 +1,7 @@
 const { defaults, NULL_ADDRESS } = require('./constants')
 
+const signatures = require('./signatures')
+
 function generateNonce() {
   return Math.round(Math.random() * 10000)
 }
@@ -9,21 +11,28 @@ function generateExpiration() {
 }
 
 module.exports = {
-  getOrder({
+  async getOrder({
     expiration = generateExpiration(),
     nonce = generateNonce(),
-    sender = NULL_ADDRESS,
+    signerAddress = NULL_ADDRESS,
+    senderAddress = NULL_ADDRESS,
     maker = defaults.Party,
     taker = defaults.Party,
     partner = defaults.Party,
-  }) {
-    return {
+  }, signer, verifyingContract) {
+    let signature
+    const order = {
       expiration,
       nonce,
-      sender,
+      signerAddress,
+      senderAddress,
       maker: { ...defaults.Party, ...maker },
       taker: { ...defaults.Party, ...taker },
       partner: { ...defaults.Party, ...partner },
     }
+    if (signer) {
+      signature = await signatures.getWeb3Signature(order, signer, verifyingContract)
+    }
+    return { order, signature }
   },
 }

@@ -13,7 +13,8 @@ contract Types {
   struct Order {
     uint256 expiration;
     uint256 nonce;
-    address sender;
+    address signerAddress;
+    address senderAddress;
     Party maker;
     Party taker;
     Party partner;
@@ -38,7 +39,8 @@ contract Types {
       "Order(",
       "uint256 expiration,",
       "uint256 nonce,",
-      "address sender,",
+      "address signerAddress,",
+      "address senderAddress,",
       "Party maker,",
       "Party taker,",
       "Party partner",
