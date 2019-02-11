@@ -25,8 +25,9 @@ contract Swap is Authorizer, Mover, Validator {
     address partnerAddress,
     uint256 partnerParam,
     address partnerToken,
-    uint256 expiration,
-    uint256 indexed nonce
+    uint256 indexed nonce,
+    uint256 expiry,
+    address signer
   );
 
   // Event emitted on order cancel.
@@ -50,31 +51,25 @@ contract Swap is Authorizer, Mover, Validator {
             "ALREADY_FILLED");
 
         // Ensure the order has not expired.
-        require(order.expiration > block.timestamp,
+        require(order.expiry > block.timestamp,
             "ORDER_EXPIRED");
 
         // Check that a specified sender is the actual sender.
-        if (order.senderAddress != address(0)) {
-          require(isAuthorized(order.taker.wallet, order.senderAddress),
+        if (msg.sender != order.taker.wallet) {
+          require(isAuthorized(order.taker.wallet, msg.sender),
             "SENDER_NOT_AUTHORIZED");
-
-          require(order.senderAddress == msg.sender,
-            "INVALID_SENDER");
         }
 
         // Check that the order has a valid signature.
-        if (order.signerAddress != address(0)) {
-          require(isAuthorized(order.maker.wallet, order.signerAddress),
+        if (order.signer != address(0)) {
+          require(isAuthorized(order.maker.wallet, order.signer),
             "SIGNER_NOT_AUTHORIZED");
 
-          require(isValid(order, order.signerAddress, signature),
-            "INVALID_SIGNER");
+          require(isValid(order, order.signer, signature),
+            "INVALID_DELEGATE_SIGNATURE");
         } else {
-          require(order.taker.wallet == msg.sender,
-            "TAKER_MUST_BE_SENDER");
-
           require(isValid(order, order.maker.wallet, signature),
-            "INVALID_SIGNATURE");
+            "INVALID_MAKER_SIGNATURE");
         }
 
         // Mark the order filled.
@@ -130,8 +125,7 @@ contract Swap is Authorizer, Mover, Validator {
             order.maker.wallet, order.maker.param, order.maker.token,
             order.taker.wallet, order.taker.param, order.taker.token,
             order.partner.wallet, order.partner.param, order.partner.token,
-            order.expiration,
-            order.nonce);
+            order.nonce, order.expiry, order.signer );
       }
 
   /**   @dev Cancels orders by marking filled.

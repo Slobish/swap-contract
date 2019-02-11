@@ -11,10 +11,9 @@ contract Types {
   }
 
   struct Order {
-    uint256 expiration;
+    uint256 expiry;
     uint256 nonce;
-    address signerAddress;
-    address senderAddress;
+    address signer;
     Party maker;
     Party taker;
     Party partner;
@@ -37,10 +36,9 @@ contract Types {
 
   bytes32 internal constant ORDER_TYPEHASH = keccak256(abi.encodePacked(
       "Order(",
-      "uint256 expiration,",
+      "uint256 expiry,",
       "uint256 nonce,",
-      "address signerAddress,",
-      "address senderAddress,",
+      "address signer,",
       "Party maker,",
       "Party taker,",
       "Party partner",

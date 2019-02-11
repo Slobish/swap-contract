@@ -9,10 +9,9 @@ module.exports = {
       { name: 'verifyingContract', type: 'address' },
     ],
     Order: [
-      { name: 'expiration', type: 'uint256' },
+      { name: 'expiry', type: 'uint256' },
       { name: 'nonce', type: 'uint256' },
-      { name: 'signerAddress', type: 'address' },
-      { name: 'senderAddress', type: 'address' },
+      { name: 'signer', type: 'address' },
       { name: 'maker', type: 'Party' },
       { name: 'taker', type: 'Party' },
       { name: 'partner', type: 'Party' },

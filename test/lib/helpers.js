@@ -1,5 +1,10 @@
 
 module.exports = {
+
+  async getLatestTimestamp() {
+    return (await web3.eth.getBlock('latest')).timestamp
+  },
+
   async allowances(account, withdrawer, allowances) {
     let index = allowances.length
     while (--index) {

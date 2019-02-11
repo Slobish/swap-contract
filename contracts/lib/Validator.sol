@@ -36,10 +36,9 @@ contract Validator is Types {
         domainSeparator,
         keccak256(abi.encode(
             ORDER_TYPEHASH,
-            order.expiration,
+            order.expiry,
             order.nonce,
-            order.signerAddress,
-            order.senderAddress,
+            order.signer,
             hashParty(order.maker),
             hashParty(order.taker),
             hashParty(order.partner)
