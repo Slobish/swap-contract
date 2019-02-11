@@ -1,7 +1,7 @@
 pragma solidity 0.5.0;
 
 
-contract Authorizer {
+contract Authorizable {
 
   // Mapping of peer address to delegate address and expiry.
   mapping (address => mapping (address => uint256)) private approvals;

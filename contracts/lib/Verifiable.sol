@@ -1,10 +1,8 @@
 pragma solidity 0.5.0;
 pragma experimental ABIEncoderV2;
 
-import "./Types.sol";
 
-
-contract Validator is Types {
+contract Verifiable {
 
   bytes constant internal EIP191_HEADER = "\x19\x01";
   bytes constant internal DOMAIN_NAME = "AIRSWAP";
@@ -12,7 +10,61 @@ contract Validator is Types {
 
   bytes32 private domainSeparator;
 
-  constructor() public Types() {
+  struct Party {
+    address wallet;
+    address token;
+    uint256 param;
+  }
+
+  struct Order {
+    uint256 expiry;
+    uint256 nonce;
+    address signer;
+    Party maker;
+    Party taker;
+    Party partner;
+  }
+
+  struct Signature {
+    uint8 v;
+    bytes32 r;
+    bytes32 s;
+    bool prefixed;
+  }
+
+  bytes32 internal constant DOMAIN_TYPEHASH = keccak256(abi.encodePacked(
+      "EIP712Domain(",
+      "string name,",
+      "string version,",
+      "address verifyingContract",
+      ")"
+  ));
+
+  bytes32 internal constant ORDER_TYPEHASH = keccak256(abi.encodePacked(
+      "Order(",
+      "uint256 expiry,",
+      "uint256 nonce,",
+      "address signer,",
+      "Party maker,",
+      "Party taker,",
+      "Party partner",
+      ")",
+      "Party(",
+      "address wallet,",
+      "address token,",
+      "uint256 param",
+      ")"
+  ));
+
+  bytes32 internal constant PARTY_TYPEHASH = keccak256(abi.encodePacked(
+      "Party(",
+      "address wallet,",
+      "address token,",
+      "uint256 param",
+      ")"
+  ));
+
+  constructor() public {
     domainSeparator = keccak256(abi.encode(
         DOMAIN_TYPEHASH,
         keccak256(DOMAIN_NAME),

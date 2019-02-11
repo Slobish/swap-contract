@@ -4,7 +4,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/IERC721.sol";
 
 
-contract Mover {
+contract Transferable {
 
   bytes4 internal constant ERC165ID = 0x01ffc9a7;
   bytes4 internal constant INTERFACE_ERC721 = 0x80ac58cd;

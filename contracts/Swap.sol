@@ -1,15 +1,15 @@
 pragma solidity 0.5.0;
 pragma experimental ABIEncoderV2;
 
-import "./lib/Authorizer.sol";
-import "./lib/Mover.sol";
-import "./lib/Validator.sol";
+import "./lib/Authorizable.sol";
+import "./lib/Transferable.sol";
+import "./lib/Verifiable.sol";
 
 
 /**
 * @title Swap Protocol
 */
-contract Swap is Authorizer, Mover, Validator {
+contract Swap is Authorizable, Transferable, Verifiable {
 
   // Mapping of maker address to mapping of nonces to mark fills.
   mapping (address => mapping (uint256 => bool)) public fills;
@@ -37,7 +37,7 @@ contract Swap is Authorizer, Mover, Validator {
   );
 
   // Constructs the contract and mixes in helpers.
-  constructor () public Authorizer() Mover() Validator() {}
+  constructor () public Authorizable() Transferable() Verifiable() {}
 
   /**
     *   @param order Order
