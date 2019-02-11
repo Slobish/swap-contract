@@ -25,7 +25,6 @@ module.exports = {
     taker = defaults.Party,
     partner = defaults.Party,
   }) {
-    let signature
     const order = {
       expiry,
       nonce,
@@ -34,12 +33,17 @@ module.exports = {
       taker: { ...defaults.Party, ...taker },
       partner: { ...defaults.Party, ...partner },
     }
-    if (signer === NULL_ADDRESS) {
-      signer = order.maker.wallet
+    const wallet = signer !== NULL_ADDRESS ? signer : order.maker.wallet
+    if (this._knownAccounts.indexOf(wallet) !== -1) {
+      return {
+        order,
+        signature: await signatures.getWeb3Signature(
+          order,
+          wallet,
+          this._verifyingContract,
+        ),
+      }
     }
-    if (this._knownAccounts.indexOf(signer) !== -1) {
-      signature = await signatures.getWeb3Signature(order, signer, this._verifyingContract)
-    }
-    return { order, signature }
+    return { order }
   },
 }

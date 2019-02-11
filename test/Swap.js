@@ -4,21 +4,29 @@ const DAI = artifacts.require('FungibleB')
 const ConcertTicket = artifacts.require('NonFungibleA')
 const Collectible = artifacts.require('NonFungibleB')
 
-const { NULL_ADDRESS } = require('./lib/constants.js')
+const {
+  emitted,
+  reverted,
+  none,
+  equal,
+  ok,
+} = require('./lib/assert.js')
+const {
+  allowances,
+  balances,
+  getLatestTimestamp,
+} = require('./lib/helpers.js')
 const orders = require('./lib/orders.js')
 const signatures = require('./lib/signatures.js')
-const { allowances, balances, getLatestTimestamp } = require('./lib/helpers.js')
-const { emitted, reverted, none, equal, ok } = require('./lib/assert.js')
 
 const defaultAuthExpiry = orders.generateExpiry()
 
 contract('Swap', ([
-    aliceAddress,
-    bobAddress,
-    carolAddress,
-    davidAddress,
-  ]) => {
-
+  aliceAddress,
+  bobAddress,
+  carolAddress,
+  davidAddress,
+]) => {
   let swapContract
   let swapAddress
   let tokenAST
@@ -163,7 +171,6 @@ contract('Swap', ([
       ok(balances(aliceAddress, [[tokenAST, 800], [tokenDAI, 50]]), 'Alice balances are incorrect')
       ok(balances(bobAddress, [[tokenAST, 200], [tokenDAI, 950]]), 'Bob balances are incorrect')
     })
-
   })
 
   describe('Signer Delegation (Maker-side)', () => {
@@ -225,10 +232,11 @@ contract('Swap', ([
       }, davidAddress, swapAddress)
       await reverted(swapContract.fill(order, signature, { from: bobAddress }), 'SIGNER_NOT_AUTHORIZED')
     })
-
   })
 
   describe('Sender Delegation (Taker-side)', () => {
+    let _order
+    let _signature
 
     before('Alice creates an order for Bob (200 AST for 50 DAI)', async () => {
       const { order, signature } = await orders.getOrder({
@@ -395,7 +403,6 @@ contract('Swap', ([
   })
 
   describe('Fills with Fees', () => {
-
     it('Checks that Carol gets paid 50 AST for facilitating a trade between Alice and Bob', async () => {
       const { order, signature } = await orders.getOrder({
         maker: {
