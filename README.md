@@ -26,46 +26,61 @@ $ yarn coverage
 
 - `Swap.sol` — 
 - `lib` `/`
-  - `Approvable.sol` —
+  - `Authorizable.sol` —
   - `Transferable.sol` —
-  - `Interfaceable.sol` — 
-  - `Validator.sol` —
+  - `Verifiable.sol` —
 
 ## Protocol
 
-##### The path of a trade
+### The Path of a Trade
 
 [ Protocol Spec ]
 
-##### The Atomic Swap
+### The Atomic Swap
 
 [ Swap Spec ]
 
-### Filling an Order
+## Features
 
-The `Swap` contract has a public function `fill(order, signature)` to perform an atomic swap.
+### Two Kinds of Tokens
 
-#### Order Properties
+[ ERC-20, ERC-721 Spec ]
 
-##### Makers
+### Signer and Sender Delegation
+
+[ Delegation Spec ]
+
+### Optional Third-party Fees
+
+[ Fill Incentive Spec ]
+
+### Structured Signatures
+
+[ EIP712 Spec ]
+
+## Specification
+
+### Order Properties
+
+#### Makers
 
 [ Maker Spec ]
 
-##### Takers
+#### Takers
 
 [ Taker Spec ]
 
-##### Partners
+#### Partners
 
 [ Fee Spec ]
 
-##### Senders
+#### Signer
 
 [ Sender Spec ]
 
-##### Expiration
+#### Expiry
 
-[ Expiration Spec ]
+[ Expiry Spec ]
 
 ##### Nonces
 
@@ -75,9 +90,6 @@ The `Swap` contract has a public function `fill(order, signature)` to perform an
 
 ```
 Order {
-  nonce: 0,
-  expiration: 0,
-  sender: 0,
   maker: {
     wallet: '0x...',
     token: '0x...',
@@ -92,7 +104,10 @@ Order {
     wallet: '0x...',
     token: '0x...',
     param: 10
-  }
+  },
+  nonce: 0,
+  expiry: 0,
+  signer: 0
 }
 ```
 
@@ -114,10 +129,6 @@ Signature {
   prefixed: false
 }
 ```
-
-## Kinds of Tokens
-
-[ ERC-20, ERC-721 Spec ]
 
 ## Failure Messages
 [ Failure Spec ]

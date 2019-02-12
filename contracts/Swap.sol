@@ -36,9 +36,6 @@ contract Swap is Authorizable, Transferable, Verifiable {
     uint256 nonce
   );
 
-  // Constructs the contract and mixes in helpers.
-  constructor () public Authorizable() Transferable() Verifiable() {}
-
   /**
     *   @param order Order
     *   @param signature bytes
