@@ -6,7 +6,7 @@ import "openzeppelin-solidity/contracts/token/ERC721/IERC721.sol";
 
 contract Transferable {
 
-  bytes4 internal constant ERC165ID = 0x01ffc9a7;
+  bytes4 internal constant INTERFACE_ERC165 = 0x01ffc9a7;
   bytes4 internal constant INTERFACE_ERC721 = 0x80ac58cd;
 
   function swap(
@@ -60,7 +60,7 @@ contract Transferable {
 
   function noThrowCall(address _contract, bytes4 _interfaceId)
       internal view returns (uint256 success, uint256 result) {
-        bytes4 erc165ID = ERC165ID;
+        bytes4 erc165ID = INTERFACE_ERC165;
 
         assembly {
             let x := mload(0x40)

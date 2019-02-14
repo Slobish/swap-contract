@@ -5,5 +5,5 @@ module.exports = {
   emitted: truffleAssert.eventEmitted,
   reverted: truffleAssert.reverts,
   equal: assert.equal,
-  ok: assert.ok
+  ok: assert.ok,
 }

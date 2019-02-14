@@ -5,9 +5,11 @@
   "license": "MIT",
   "scripts": {
     "compile": "truffle compile",
-    "test": "truffle test",
     "coverage": "yarn solidity-coverage",
-    "migrate": "truffle migrate"
+    "eslint": "./node_modules/eslint/bin/eslint.js \"./test/**/*.js\"",
+    "migrate": "truffle migrate",
+    "solhint": "./node_modules/solhint/solhint.js \"./contracts/**/*.sol\"",
+    "test": "truffle test"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.1",

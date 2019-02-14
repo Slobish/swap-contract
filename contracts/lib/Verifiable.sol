@@ -29,7 +29,7 @@ contract Verifiable {
     uint8 v;
     bytes32 r;
     bytes32 s;
-    bool prefixed;
+    bytes1 version;
   }
 
   bytes32 internal constant DOMAIN_TYPEHASH = keccak256(abi.encodePacked(
@@ -99,16 +99,18 @@ contract Verifiable {
   }
 
   function isValid(Order memory order, address signer, Signature memory signature) public view returns (bool) {
-    if (signature.prefixed) {
-      return signer == ecrecover(
-          keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hashOrder(order))),
-          signature.v, signature.r, signature.s
-      );
-    } else {
+    if (signature.version == byte(0x01)) {
       return signer == ecrecover(
           hashOrder(order),
           signature.v, signature.r, signature.s
       );
     }
+    if (signature.version == byte(0x45)) {
+      return signer == ecrecover(
+          keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hashOrder(order))),
+          signature.v, signature.r, signature.s
+      );
+    }
+    revert("INVALID_SIGNATURE_VERSION");
   }
 }

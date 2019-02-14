@@ -568,40 +568,48 @@ contract('Swap', ([
       const signatureTwo = signatures.getPrivateKeySignature(orderTwo, evePrivKey, swapAddress)
       await reverted(swapContract.fill(orderOne, signatureTwo, { from: bobAddress }), 'INVALID_DELEGATE_SIGNATURE')
     })
-
-    it('Checks that a private key signature is valid', async () => {
-      const { order } = await orders.getOrder(
-        {
-          maker: {
-            wallet: eveAddress,
-            token: tokenAST.address,
-            param: 0,
-          },
-          taker: {
-            wallet: aliceAddress,
-            token: tokenDAI.address,
-            param: 0,
-          },
+    it('Checks that an invalid signature version will revert', async () => {
+      const { order } = await orders.getOrder({
+        maker: {
+          wallet: aliceAddress,
         },
-      )
+        taker: {
+          wallet: bobAddress,
+        },
+      })
+      const signature = signatures.getPrivateKeySignature(order, evePrivKey, swapAddress)
+      signature.version = Buffer.from('00', 'hex')
+      await reverted(swapContract.fill(order, signature, { from: bobAddress }), 'INVALID_SIGNATURE_VERSION')
+    })
+    it('Checks that a private key signature is valid', async () => {
+      const { order } = await orders.getOrder({
+        maker: {
+          wallet: eveAddress,
+          token: tokenAST.address,
+          param: 0,
+        },
+        taker: {
+          wallet: aliceAddress,
+          token: tokenDAI.address,
+          param: 0,
+        },
+      })
       const signature = signatures.getPrivateKeySignature(order, evePrivKey, swapAddress)
       emitted(await swapContract.fill(order, signature, { from: aliceAddress }), 'Fill')
     })
     it('Checks that a typed data (EIP712) signature is valid', async () => {
-      const { order } = await orders.getOrder(
-        {
-          maker: {
-            wallet: eveAddress,
-            token: tokenAST.address,
-            param: 0,
-          },
-          taker: {
-            wallet: aliceAddress,
-            token: tokenDAI.address,
-            param: 0,
-          },
+      const { order } = await orders.getOrder({
+        maker: {
+          wallet: eveAddress,
+          token: tokenAST.address,
+          param: 0,
         },
-      )
+        taker: {
+          wallet: aliceAddress,
+          token: tokenDAI.address,
+          param: 0,
+        },
+      })
       const signature = signatures.getTypedDataSignature(order, evePrivKey, swapAddress)
       emitted(await swapContract.fill(order, signature, { from: aliceAddress }), 'Fill')
     })

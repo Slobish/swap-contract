@@ -10,7 +10,10 @@ module.exports = {
     const sig = await web3.eth.sign(orderHashHex, signer)
     const { v, r, s } = ethUtil.fromRpcSig(sig)
     return {
-      r, s, v, prefixed: true,
+      version: '0x45', // peronal_sign
+      v,
+      r,
+      s,
     }
   },
   getPrivateKeySignature(order, privateKey, verifyingContract) {
@@ -18,7 +21,10 @@ module.exports = {
     const orderHashBuff = ethUtil.toBuffer(orderHash)
     const { r, s, v } = ethUtil.ecsign(orderHashBuff, privateKey)
     return {
-      r, s, v, prefixed: false,
+      version: '0x01', // signTypedData
+      v,
+      r,
+      s,
     }
   },
   getTypedDataSignature(order, privateKey, verifyingContract) {
@@ -36,7 +42,10 @@ module.exports = {
     })
     const { v, r, s } = ethUtil.fromRpcSig(sig)
     return {
-      r, s, v, prefixed: false,
+      version: '0x01', // signTypedData
+      v,
+      r,
+      s,
     }
   },
 }
