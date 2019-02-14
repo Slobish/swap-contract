@@ -26,9 +26,9 @@ Contracts written in [Solidity 0.5.0](https://solidity.readthedocs.io/en/v0.5.0/
 | Term | Type | Description |
 | :--- | :--- | :--- |
 | **Swap** | `contract` | A smart contract that interprets trade terms and executes an atomic swap. |
-| **Order** | `struct` | An agreement on trade terms signed by the Maker. |
-| **Maker** | `account` | A party that sets and signs the trade terms into an Order. |
-| **Taker** | `account` | A party that accepts and submits the Order to the Swap contract. |
+| **Order** | `struct` | An agreement on trade terms signed by a Maker. |
+| **Maker** | `account` | A party that sets and signs the trade terms of an Order. |
+| **Taker** | `account` | A party that accepts and submits an Order to the Swap contract. |
 | **Affiliate** | `account` | An *optional* party compensated by the Maker for facilitating a trade. |
 | **Delegate** | `account` | An *optional* party authorized to make or take orders on behalf of another party. |
 | **Token** | `contract` | A fungible or non-fungible Ethereum asset to be traded. |
