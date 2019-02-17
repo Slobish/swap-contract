@@ -22,9 +22,9 @@ contract Swap is Authorizable, Transferable, Verifiable {
     address takerAddress,
     uint256 takerParam,
     address takerToken,
-    address partnerAddress,
-    uint256 partnerParam,
-    address partnerToken,
+    address affiliateAddress,
+    uint256 affiliateParam,
+    address affiliateToken,
     uint256 indexed nonce,
     uint256 expiry,
     address signer
@@ -108,20 +108,20 @@ contract Swap is Authorizable, Transferable, Verifiable {
 
         }
 
-        // Transfer a specified fee to an partner.
-        if (order.partner.wallet != address(0)) {
+        // Transfer a specified fee to an affiliate.
+        if (order.affiliate.wallet != address(0)) {
           transfer(
             order.maker.wallet,
-            order.partner.wallet,
-            order.partner.param,
-            order.partner.token
+            order.affiliate.wallet,
+            order.affiliate.param,
+            order.affiliate.token
           );
         }
 
         emit Fill(
             order.maker.wallet, order.maker.param, order.maker.token,
             order.taker.wallet, order.taker.param, order.taker.token,
-            order.partner.wallet, order.partner.param, order.partner.token,
+            order.affiliate.wallet, order.affiliate.param, order.affiliate.token,
             order.nonce, order.expiry, order.signer );
       }
 

@@ -23,15 +23,15 @@ Contracts written in [Solidity 0.5.0](https://solidity.readthedocs.io/en/v0.5.0/
 
 ## Definitions
 
-| Term | Type | Description |
+| Entity | Type | Description |
 | :--- | :--- | :--- |
-| **Swap** | `contract` | A smart contract that interprets trade terms and executes an atomic swap. |
-| **Order** | `struct` | An agreement on trade terms signed by a Maker. |
-| **Maker** | `account` | A party that sets and signs the trade terms of an Order. |
-| **Taker** | `account` | A party that accepts and submits an Order to the Swap contract. |
-| **Affiliate** | `account` | An *optional* party compensated by the Maker for facilitating a trade. |
-| **Delegate** | `account` | An *optional* party authorized to make or take orders on behalf of another party. |
-| **Token** | `contract` | A fungible or non-fungible Ethereum asset to be traded. |
+| Swap | `contract` | A smart contract that interprets trade terms and executes an atomic swap. |
+| Order | `struct` | An agreement on trade terms signed by a Maker. |
+| Maker | `account` | A party that sets and signs the trade terms of an Order. |
+| Taker | `account` | A party that accepts and submits an Order to the Swap contract. |
+| Affiliate | `account` | An *optional* party compensated by the Maker for facilitating a trade. |
+| Delegate | `account` | An *optional* party authorized to make or take orders on behalf of another party. |
+| Token | `contract` | A fungible or non-fungible Ethereum asset to be traded. |
 
 ## Sources
 
@@ -76,12 +76,12 @@ function revoke(address delegate) external returns (bool)
 
 | Property | Type | Necessity | Description |
 | :--- | :--- | :--- | :--- |
-| **expiry** | `uint256` | Required | The expiration time in seconds. |
-| **nonce** | `uint256` | Required | A unique identifier for the order. |
-| **signer** | `address` | Optional | A third-party signing on behalf of the maker. |
-| **maker** | `Party` | Required | The maker of the order who sets price. |
-| **taker** | `Party` | Required | The taker of the order who accepts price. |
-| **partner** | `Party` | Optional | The facilitator who is paid by the maker. |
+| `expiry` | `uint256` | Required | The expiration time in seconds. |
+| `nonce` | `uint256` | Required | A unique identifier for the order. |
+| `signer` | `address` | Optional | A third-party signing on behalf of the maker. |
+| `maker` | `Party` | Required | The maker of the order who sets price. |
+| `taker` | `Party` | Required | The taker of the order who accepts price. |
+| `affiliate` | `Party` | Optional | A facilitator who is paid by the maker. |
 
 ```Solidity
 struct Order {
@@ -90,7 +90,7 @@ struct Order {
   address signer;
   Party maker;
   Party taker;
-  Party partner;
+  Party affiliate;
 }
 ```
 
@@ -98,9 +98,9 @@ struct Order {
 
 | Property | Type | Description |
 | :--- | :--- | :--- |
-| **wallet** | `address` | Required | The expiration time in seconds. |
-| **token** | `address` | Required | A unique identifier for the order. |
-| **param** | `uint256` | Required | Either the amount of ERC20 or identifier of an ERC721. |
+| `wallet` | `address` | Required | The expiration time in seconds. |
+| `token` | `address` | Required | A unique identifier for the order. |
+| `param` | `uint256` | Required | Either the amount of ERC20 or identifier of an ERC721. |
 
 ```Solidity
 struct Party {
@@ -110,7 +110,7 @@ struct Party {
 }
 ```
 
-JSON of an order with a partner and signed by a delegate.
+JSON of an order with a affiliate and signed by a delegate.
 
 ```JSON
 {
@@ -127,7 +127,7 @@ JSON of an order with a partner and signed by a delegate.
     "token": "0x...",
     "param": 500
   },
-  "partner": {
+  "affiliate": {
     "wallet": "0x...",
     "token": "0x...",
     "param": 10

@@ -22,7 +22,7 @@ contract Verifiable {
     address signer;
     Party maker;
     Party taker;
-    Party partner;
+    Party affiliate;
   }
 
   struct Signature {
@@ -47,7 +47,7 @@ contract Verifiable {
       "address signer,",
       "Party maker,",
       "Party taker,",
-      "Party partner",
+      "Party affiliate",
       ")",
       "Party(",
       "address wallet,",
@@ -93,7 +93,7 @@ contract Verifiable {
             order.signer,
             hashParty(order.maker),
             hashParty(order.taker),
-            hashParty(order.partner)
+            hashParty(order.affiliate)
         ))
     ));
   }

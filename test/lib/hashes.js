@@ -40,7 +40,7 @@ function hashOrder(order) {
       order.signer,
       hashParty(order.maker),
       hashParty(order.taker),
-      hashParty(order.partner),
+      hashParty(order.affiliate),
     ],
   ))
 }

@@ -14,7 +14,7 @@ module.exports = {
       { name: 'signer', type: 'address' },
       { name: 'maker', type: 'Party' },
       { name: 'taker', type: 'Party' },
-      { name: 'partner', type: 'Party' },
+      { name: 'affiliate', type: 'Party' },
     ],
     Party: [
       { name: 'wallet', type: 'address' },

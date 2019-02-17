@@ -415,7 +415,7 @@ contract('Swap', ([
           token: tokenDAI.address,
           param: 50,
         },
-        partner: {
+        affiliate: {
           wallet: carolAddress,
           token: tokenAST.address,
           param: 50,
@@ -510,7 +510,7 @@ contract('Swap', ([
           token: tokenDAI.address,
           param: 50,
         },
-        partner: {
+        affiliate: {
           wallet: carolAddress,
           token: tokenKitty.address,
           param: 54321,

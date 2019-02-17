@@ -23,7 +23,7 @@ module.exports = {
     signer = NULL_ADDRESS,
     maker = defaults.Party,
     taker = defaults.Party,
-    partner = defaults.Party,
+    affiliate = defaults.Party,
   }) {
     const order = {
       expiry,
@@ -31,7 +31,7 @@ module.exports = {
       signer,
       maker: { ...defaults.Party, ...maker },
       taker: { ...defaults.Party, ...taker },
-      partner: { ...defaults.Party, ...partner },
+      affiliate: { ...defaults.Party, ...affiliate },
     }
     const wallet = signer !== NULL_ADDRESS ? signer : order.maker.wallet
     if (this._knownAccounts.indexOf(wallet) !== -1) {
