@@ -10,6 +10,23 @@ $ yarn
 $ yarn coverage
 ```
 
+## Features
+
+### Atomic Swap
+Transact directly peer-to-peer.
+
+### Fungible and Non-Fungible
+Swap between any two digital assets.
+
+### Typed Data Signatures
+Sign informative messages to improve usability.
+
+### Delegate Authorization
+Authorize peers to act on behalf of others.
+
+### Affiliate Fees
+Compensate those who connect peers.
+
 ## Tools
 
 Contracts written in [Solidity 0.5.0](https://solidity.readthedocs.io/en/v0.5.0/) and tests written in [Mocha / Chai](https://truffleframework.com/docs/truffle/testing/writing-tests-in-javascript) with JavaScript.

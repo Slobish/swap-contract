@@ -4,12 +4,12 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "compile": "./node_modules/truffle/build/cli.bundled.js compile",
+    "compile": "yarn truffle compile",
     "coverage": "yarn solidity-coverage",
-    "eslint": "./node_modules/eslint/bin/eslint.js \"./test/**/*.js\"",
-    "migrate": "./node_modules/truffle/build/cli.bundled.js migrate",
-    "solhint": "./node_modules/solhint/solhint.js \"./contracts/**/*.sol\"",
-    "test": "./node_modules/truffle/build/cli.bundled.js test"
+    "eslint": "yarn eslint \"./test/**/*.js\"",
+    "migrate": "yarn truffle migrate",
+    "solhint": "yarn solhint \"./contracts/**/*.sol\"",
+    "test": "yarn truffle test"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.1",
@@ -19,6 +19,7 @@
     "ethereumjs-abi": "^0.6.6",
     "ethereumjs-util": "^6.0.0",
     "ethers": "^4.0.23",
+    "ganache-cli": "^6.3.0",
     "solhint": "^1.5.1",
     "solidity-coverage": "git://github.com/dmosites/solidity-coverage.git",
     "truffle": "^5.0.4",
