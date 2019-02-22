@@ -1,0 +1,292 @@
+ERROR:Slither:- Fetching solc version list from solc-bin
+- Downloading compiler
+
+INFO:Detectors:
+Address.isContract (openzeppelin-solidity/contracts/utils/Address.sol#14-25) is declared view but contains assembly code
+Transferable.noThrowCall (swap-protocol/contracts/lib/Transferable.sol#61-80) is declared view but contains assembly code
+Reference: https://github.com/trailofbits/slither/wiki/Detectors-Documentation#constant-functions-changing-the-state
+INFO:Detectors:
+ERC721 (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#13-285) has incorrect ERC20 function interface(s):
+    -approve (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#81-88)
+    -transferFrom (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#131-135)
+IERC721 (openzeppelin-solidity/contracts/token/ERC721/IERC721.sol#9-27) has incorrect ERC20 function interface(s):
+    -approve (openzeppelin-solidity/contracts/token/ERC721/IERC721.sol#17)
+    -transferFrom (openzeppelin-solidity/contracts/token/ERC721/IERC721.sol#23)
+Reference: https://github.com/trailofbits/slither/wiki/Detectors-Documentation#incorrect-erc20-interface
+INFO:Detectors:
+Transferable.transfer (swap-protocol/contracts/lib/Transferable.sol#35-48) does not use the value returned by external calls:
+    -IERC20(token).transferFrom(from,to,param) (swap-protocol/contracts/lib/Transferable.sol#46)
+Reference: https://github.com/trailofbits/slither/wiki/Detectors-Documentation#unused-return
+INFO:Detectors:
+Authorizable.authorize (swap-protocol/contracts/lib/Authorizable.sol#20-25) uses timestamp for comparisons
+    Dangerous comparisons:
+    - require(bool,string)(expiry > block.timestamp,INVALID_EXPIRY) (swap-protocol/contracts/lib/Authorizable.sol#21)
+Authorizable.isAuthorized (swap-protocol/contracts/lib/Authorizable.sol#33-38) uses timestamp for comparisons
+    Dangerous comparisons:
+    - approvals[approver][delegate] > block.timestamp (swap-protocol/contracts/lib/Authorizable.sol#34-36)
+Swap.fill (swap-protocol/contracts/Swap.sol#43-126) uses timestamp for comparisons
+    Dangerous comparisons:
+    - require(bool,string)(order.expiry > block.timestamp,ORDER_EXPIRED) (swap-protocol/contracts/Swap.sol#51-52)
+Reference: https://github.com/trailofbits/slither/wiki/Detectors-Documentation#block-timestamp
+INFO:Detectors:
+Address.isContract uses assembly (openzeppelin-solidity/contracts/utils/Address.sol#14-25)
+    - openzeppelin-solidity/contracts/utils/Address.sol#23-24
+Transferable.noThrowCall uses assembly (swap-protocol/contracts/lib/Transferable.sol#61-80)
+    - swap-protocol/contracts/lib/Transferable.sol#65-80
+Reference: https://github.com/trailofbits/slither/wiki/Detectors-Documentation#assembly-usage
+INFO:Detectors:
+Different versions of Solidity is used in :
+    - Version used: ['0.5.0', '>=0.4.21<0.6.0', 'ABIEncoderV2', '^0.5.0']
+    - swap-protocol/contracts/Migrations.sol#1 declares pragma solidity>=0.4.21<0.6.0
+    - swap-protocol/contracts/test/FungibleA.sol#1 declares pragma solidity0.5.0
+    - openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol#1 declares pragma solidity^0.5.0
+    - swap-protocol/contracts/lib/Verifiable.sol#1 declares pragma solidity0.5.0
+    - swap-protocol/contracts/lib/Verifiable.sol#2 declares pragma experimentalABIEncoderV2
+    - openzeppelin-solidity/contracts/token/ERC721/IERC721Receiver.sol#1 declares pragma solidity^0.5.0
+    - openzeppelin-solidity/contracts/math/SafeMath.sol#1 declares pragma solidity^0.5.0
+    - openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#1 declares pragma solidity^0.5.0
+    - openzeppelin-solidity/contracts/token/ERC721/IERC721.sol#1 declares pragma solidity^0.5.0
+    - swap-protocol/contracts/test/NonFungibleB.sol#1 declares pragma solidity0.5.0
+    - swap-protocol/contracts/test/NonFungibleA.sol#1 declares pragma solidity0.5.0
+    - swap-protocol/contracts/lib/Authorizable.sol#1 declares pragma solidity0.5.0
+    - openzeppelin-solidity/contracts/access/Roles.sol#1 declares pragma solidity^0.5.0
+    - openzeppelin-solidity/contracts/token/ERC20/IERC20.sol#1 declares pragma solidity^0.5.0
+    - openzeppelin-solidity/contracts/token/ERC721/ERC721Mintable.sol#1 declares pragma solidity^0.5.0
+    - openzeppelin-solidity/contracts/introspection/IERC165.sol#1 declares pragma solidity^0.5.0
+    - openzeppelin-solidity/contracts/introspection/ERC165.sol#1 declares pragma solidity^0.5.0
+    - openzeppelin-solidity/contracts/utils/Address.sol#1 declares pragma solidity^0.5.0
+    - openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#1 declares pragma solidity^0.5.0
+    - swap-protocol/contracts/Swap.sol#1 declares pragma solidity0.5.0
+    - swap-protocol/contracts/Swap.sol#2 declares pragma experimentalABIEncoderV2
+    - swap-protocol/contracts/lib/Transferable.sol#1 declares pragma solidity0.5.0
+    - openzeppelin-solidity/contracts/access/roles/MinterRole.sol#1 declares pragma solidity^0.5.0
+    - swap-protocol/contracts/test/FungibleB.sol#1 declares pragma solidity0.5.0
+Reference: https://github.com/trailofbits/slither/wiki/Detectors-Documentation#different-pragma-directives-are-used
+INFO:Detectors:
+Migrations.setCompleted (swap-protocol/contracts/Migrations.sol#15-17) should be declared external
+Migrations.upgrade (swap-protocol/contracts/Migrations.sol#19-22) should be declared external
+ERC20Mintable.mint (openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol#17-20) should be declared external
+IERC721Receiver.onERC721Received (openzeppelin-solidity/contracts/token/ERC721/IERC721Receiver.sol#23-24) should be declared external
+ERC721.balanceOf (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#57-60) should be declared external
+IERC721.balanceOf (openzeppelin-solidity/contracts/token/ERC721/IERC721.sol#14) should be declared external
+ERC721.approve (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#81-88) should be declared external
+IERC721.approve (openzeppelin-solidity/contracts/token/ERC721/IERC721.sol#17) should be declared external
+IERC721.setApprovalForAll (openzeppelin-solidity/contracts/token/ERC721/IERC721.sol#20) should be declared external
+ERC721.setApprovalForAll (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#107-111) should be declared external
+IERC721.safeTransferFrom (openzeppelin-solidity/contracts/token/ERC721/IERC721.sol#24) should be declared external
+ERC721.safeTransferFrom (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#149-151) should be declared external
+ERC721Mintable.mint (openzeppelin-solidity/contracts/token/ERC721/ERC721Mintable.sol#17-20) should be declared external
+ERC20.transfer (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#58-61) should be declared external
+IERC20.transfer (openzeppelin-solidity/contracts/token/ERC20/IERC20.sol#8) should be declared external
+IERC20.approve (openzeppelin-solidity/contracts/token/ERC20/IERC20.sol#10) should be declared external
+ERC20.approve (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#72-78) should be declared external
+IERC20.transferFrom (openzeppelin-solidity/contracts/token/ERC20/IERC20.sol#12) should be declared external
+ERC20.transferFrom (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#88-93) should be declared external
+ERC20.totalSupply (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#30-32) should be declared external
+IERC20.totalSupply (openzeppelin-solidity/contracts/token/ERC20/IERC20.sol#14) should be declared external
+ERC20.balanceOf (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#39-41) should be declared external
+IERC20.balanceOf (openzeppelin-solidity/contracts/token/ERC20/IERC20.sol#16) should be declared external
+IERC20.allowance (openzeppelin-solidity/contracts/token/ERC20/IERC20.sol#18) should be declared external
+ERC20.allowance (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#49-51) should be declared external
+ERC20.increaseAllowance (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#105-111) should be declared external
+ERC20.decreaseAllowance (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#123-129) should be declared external
+Swap.fill (swap-protocol/contracts/Swap.sol#43-126) should be declared external
+Swap.cancel (swap-protocol/contracts/Swap.sol#131-138) should be declared external
+MinterRole.addMinter (openzeppelin-solidity/contracts/access/roles/MinterRole.sol#26-28) should be declared external
+MinterRole.renounceMinter (openzeppelin-solidity/contracts/access/roles/MinterRole.sol#30-32) should be declared external
+Reference: https://github.com/trailofbits/slither/wiki/Detectors-Documentation#public-function-that-could-be-declared-as-external
+INFO:Detectors:
+Detected issues with version pragma in :
+    - pragma solidity>=0.4.21<0.6.0 (swap-protocol/contracts/Migrations.sol#1): it allows old versions
+    - pragma solidity0.5.0 (swap-protocol/contracts/test/FungibleA.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol#1): it allows old versions
+    - pragma solidity0.5.0 (swap-protocol/contracts/lib/Verifiable.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/token/ERC721/IERC721Receiver.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/math/SafeMath.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/token/ERC721/IERC721.sol#1): it allows old versions
+    - pragma solidity0.5.0 (swap-protocol/contracts/test/NonFungibleB.sol#1): it allows old versions
+    - pragma solidity0.5.0 (swap-protocol/contracts/test/NonFungibleA.sol#1): it allows old versions
+    - pragma solidity0.5.0 (swap-protocol/contracts/lib/Authorizable.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/access/Roles.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/token/ERC20/IERC20.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/token/ERC721/ERC721Mintable.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/introspection/IERC165.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/introspection/ERC165.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/utils/Address.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#1): it allows old versions
+    - pragma solidity0.5.0 (swap-protocol/contracts/Swap.sol#1): it allows old versions
+    - pragma solidity0.5.0 (swap-protocol/contracts/lib/Transferable.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/access/roles/MinterRole.sol#1): it allows old versions
+    - pragma solidity0.5.0 (swap-protocol/contracts/test/FungibleB.sol#1): it allows old versions
+Reference: https://github.com/trailofbits/slither/wiki/Detectors-Documentation#incorrect-version-of-solidity
+INFO:Detectors:
+Parameter 'new_address' of Migrations.upgrade (swap-protocol/contracts/Migrations.sol#19) is not in mixedCase
+Variable 'Migrations.last_completed_migration' (swap-protocol/contracts/Migrations.sol#5) is not in mixedCase
+Parameter '_data' of ERC721.safeTransferFrom (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#165) is not in mixedCase
+Function 'ERC721._exists' (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#175-178) is not in mixedCase
+Function 'ERC721._isApprovedOrOwner' (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#187-190) is not in mixedCase
+Function 'ERC721._mint' (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#198-206) is not in mixedCase
+Function 'ERC721._burn' (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#215-224) is not in mixedCase
+Function 'ERC721._burn' (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#231-233) is not in mixedCase
+Function 'ERC721._transferFrom' (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#242-254) is not in mixedCase
+Function 'ERC721._checkOnERC721Received' (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#265-274) is not in mixedCase
+Parameter '_data' of ERC721._checkOnERC721Received (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#265) is not in mixedCase
+Function 'ERC721._clearApproval' (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#280-284) is not in mixedCase
+Function 'ERC165._registerInterface' (openzeppelin-solidity/contracts/introspection/ERC165.sol#40-43) is not in mixedCase
+Function 'ERC20._transfer' (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#137-143) is not in mixedCase
+Function 'ERC20._mint' (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#152-158) is not in mixedCase
+Function 'ERC20._burn' (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#166-172) is not in mixedCase
+Function 'ERC20._burnFrom' (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#182-186) is not in mixedCase
+Parameter '_contract' of Transferable.doesContractImplementInterface (swap-protocol/contracts/lib/Transferable.sol#50) is not in mixedCase
+Parameter '_interfaceId' of Transferable.doesContractImplementInterface (swap-protocol/contracts/lib/Transferable.sol#50) is not in mixedCase
+Function 'MinterRole._addMinter' (openzeppelin-solidity/contracts/access/roles/MinterRole.sol#34-37) is not in mixedCase
+Function 'MinterRole._removeMinter' (openzeppelin-solidity/contracts/access/roles/MinterRole.sol#39-42) is not in mixedCase
+Reference: https://github.com/trailofbits/slither/wiki/Detectors-Documentation#conformance-to-solidity-naming-conventions
+INFO:Slither:. analyzed (22 contracts), 64 result(s) found
+(venv) poiresel@poiresel-ThinkPad-T420:~/Documents/Git/swap-protocol$ slither . > slither.txt
+INFO:Slither:'npx truffle@5.0.4 compile' running (use --truffle-version truffle@x.x.x to use specific version)
+INFO:Slither:
+INFO:Detectors:
+Address.isContract (openzeppelin-solidity/contracts/utils/Address.sol#14-25) is declared view but contains assembly code
+Transferable.noThrowCall (swap-protocol/contracts/lib/Transferable.sol#61-80) is declared view but contains assembly code
+Reference: https://github.com/trailofbits/slither/wiki/Detectors-Documentation#constant-functions-changing-the-state
+INFO:Detectors:
+ERC721 (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#13-285) has incorrect ERC20 function interface(s):
+    -approve (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#81-88)
+    -transferFrom (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#131-135)
+IERC721 (openzeppelin-solidity/contracts/token/ERC721/IERC721.sol#9-27) has incorrect ERC20 function interface(s):
+    -approve (openzeppelin-solidity/contracts/token/ERC721/IERC721.sol#17)
+    -transferFrom (openzeppelin-solidity/contracts/token/ERC721/IERC721.sol#23)
+Reference: https://github.com/trailofbits/slither/wiki/Detectors-Documentation#incorrect-erc20-interface
+INFO:Detectors:
+Transferable.transfer (swap-protocol/contracts/lib/Transferable.sol#35-48) does not use the value returned by external calls:
+    -IERC20(token).transferFrom(from,to,param) (swap-protocol/contracts/lib/Transferable.sol#46)
+Reference: https://github.com/trailofbits/slither/wiki/Detectors-Documentation#unused-return
+INFO:Detectors:
+Authorizable.authorize (swap-protocol/contracts/lib/Authorizable.sol#20-25) uses timestamp for comparisons
+    Dangerous comparisons:
+    - require(bool,string)(expiry > block.timestamp,INVALID_EXPIRY) (swap-protocol/contracts/lib/Authorizable.sol#21)
+Authorizable.isAuthorized (swap-protocol/contracts/lib/Authorizable.sol#33-38) uses timestamp for comparisons
+    Dangerous comparisons:
+    - approvals[approver][delegate] > block.timestamp (swap-protocol/contracts/lib/Authorizable.sol#34-36)
+Swap.fill (swap-protocol/contracts/Swap.sol#43-126) uses timestamp for comparisons
+    Dangerous comparisons:
+    - require(bool,string)(order.expiry > block.timestamp,ORDER_EXPIRED) (swap-protocol/contracts/Swap.sol#51-52)
+Reference: https://github.com/trailofbits/slither/wiki/Detectors-Documentation#block-timestamp
+INFO:Detectors:
+Address.isContract uses assembly (openzeppelin-solidity/contracts/utils/Address.sol#14-25)
+    - openzeppelin-solidity/contracts/utils/Address.sol#23-24
+Transferable.noThrowCall uses assembly (swap-protocol/contracts/lib/Transferable.sol#61-80)
+    - swap-protocol/contracts/lib/Transferable.sol#65-80
+Reference: https://github.com/trailofbits/slither/wiki/Detectors-Documentation#assembly-usage
+INFO:Detectors:
+Different versions of Solidity is used in :
+    - Version used: ['0.5.0', '>=0.4.21<0.6.0', 'ABIEncoderV2', '^0.5.0']
+    - swap-protocol/contracts/Migrations.sol#1 declares pragma solidity>=0.4.21<0.6.0
+    - swap-protocol/contracts/test/FungibleA.sol#1 declares pragma solidity0.5.0
+    - openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol#1 declares pragma solidity^0.5.0
+    - swap-protocol/contracts/lib/Verifiable.sol#1 declares pragma solidity0.5.0
+    - swap-protocol/contracts/lib/Verifiable.sol#2 declares pragma experimentalABIEncoderV2
+    - openzeppelin-solidity/contracts/token/ERC721/IERC721Receiver.sol#1 declares pragma solidity^0.5.0
+    - openzeppelin-solidity/contracts/math/SafeMath.sol#1 declares pragma solidity^0.5.0
+    - openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#1 declares pragma solidity^0.5.0
+    - openzeppelin-solidity/contracts/token/ERC721/IERC721.sol#1 declares pragma solidity^0.5.0
+    - swap-protocol/contracts/test/NonFungibleB.sol#1 declares pragma solidity0.5.0
+    - swap-protocol/contracts/test/NonFungibleA.sol#1 declares pragma solidity0.5.0
+    - swap-protocol/contracts/lib/Authorizable.sol#1 declares pragma solidity0.5.0
+    - openzeppelin-solidity/contracts/access/Roles.sol#1 declares pragma solidity^0.5.0
+    - openzeppelin-solidity/contracts/token/ERC20/IERC20.sol#1 declares pragma solidity^0.5.0
+    - openzeppelin-solidity/contracts/token/ERC721/ERC721Mintable.sol#1 declares pragma solidity^0.5.0
+    - openzeppelin-solidity/contracts/introspection/IERC165.sol#1 declares pragma solidity^0.5.0
+    - openzeppelin-solidity/contracts/introspection/ERC165.sol#1 declares pragma solidity^0.5.0
+    - openzeppelin-solidity/contracts/utils/Address.sol#1 declares pragma solidity^0.5.0
+    - openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#1 declares pragma solidity^0.5.0
+    - swap-protocol/contracts/Swap.sol#1 declares pragma solidity0.5.0
+    - swap-protocol/contracts/Swap.sol#2 declares pragma experimentalABIEncoderV2
+    - swap-protocol/contracts/lib/Transferable.sol#1 declares pragma solidity0.5.0
+    - openzeppelin-solidity/contracts/access/roles/MinterRole.sol#1 declares pragma solidity^0.5.0
+    - swap-protocol/contracts/test/FungibleB.sol#1 declares pragma solidity0.5.0
+Reference: https://github.com/trailofbits/slither/wiki/Detectors-Documentation#different-pragma-directives-are-used
+INFO:Detectors:
+Migrations.setCompleted (swap-protocol/contracts/Migrations.sol#15-17) should be declared external
+Migrations.upgrade (swap-protocol/contracts/Migrations.sol#19-22) should be declared external
+ERC20Mintable.mint (openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol#17-20) should be declared external
+IERC721Receiver.onERC721Received (openzeppelin-solidity/contracts/token/ERC721/IERC721Receiver.sol#23-24) should be declared external
+IERC721.balanceOf (openzeppelin-solidity/contracts/token/ERC721/IERC721.sol#14) should be declared external
+ERC721.balanceOf (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#57-60) should be declared external
+ERC721.approve (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#81-88) should be declared external
+IERC721.approve (openzeppelin-solidity/contracts/token/ERC721/IERC721.sol#17) should be declared external
+IERC721.setApprovalForAll (openzeppelin-solidity/contracts/token/ERC721/IERC721.sol#20) should be declared external
+ERC721.setApprovalForAll (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#107-111) should be declared external
+IERC721.safeTransferFrom (openzeppelin-solidity/contracts/token/ERC721/IERC721.sol#24) should be declared external
+ERC721.safeTransferFrom (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#149-151) should be declared external
+ERC721Mintable.mint (openzeppelin-solidity/contracts/token/ERC721/ERC721Mintable.sol#17-20) should be declared external
+IERC20.transfer (openzeppelin-solidity/contracts/token/ERC20/IERC20.sol#8) should be declared external
+ERC20.transfer (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#58-61) should be declared external
+ERC20.approve (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#72-78) should be declared external
+IERC20.approve (openzeppelin-solidity/contracts/token/ERC20/IERC20.sol#10) should be declared external
+IERC20.transferFrom (openzeppelin-solidity/contracts/token/ERC20/IERC20.sol#12) should be declared external
+ERC20.transferFrom (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#88-93) should be declared external
+ERC20.totalSupply (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#30-32) should be declared external
+IERC20.totalSupply (openzeppelin-solidity/contracts/token/ERC20/IERC20.sol#14) should be declared external
+ERC20.balanceOf (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#39-41) should be declared external
+IERC20.balanceOf (openzeppelin-solidity/contracts/token/ERC20/IERC20.sol#16) should be declared external
+ERC20.allowance (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#49-51) should be declared external
+IERC20.allowance (openzeppelin-solidity/contracts/token/ERC20/IERC20.sol#18) should be declared external
+ERC20.increaseAllowance (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#105-111) should be declared external
+ERC20.decreaseAllowance (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#123-129) should be declared external
+Swap.fill (swap-protocol/contracts/Swap.sol#43-126) should be declared external
+Swap.cancel (swap-protocol/contracts/Swap.sol#131-138) should be declared external
+MinterRole.addMinter (openzeppelin-solidity/contracts/access/roles/MinterRole.sol#26-28) should be declared external
+MinterRole.renounceMinter (openzeppelin-solidity/contracts/access/roles/MinterRole.sol#30-32) should be declared external
+Reference: https://github.com/trailofbits/slither/wiki/Detectors-Documentation#public-function-that-could-be-declared-as-external
+INFO:Detectors:
+Detected issues with version pragma in :
+    - pragma solidity>=0.4.21<0.6.0 (swap-protocol/contracts/Migrations.sol#1): it allows old versions
+    - pragma solidity0.5.0 (swap-protocol/contracts/test/FungibleA.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol#1): it allows old versions
+    - pragma solidity0.5.0 (swap-protocol/contracts/lib/Verifiable.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/token/ERC721/IERC721Receiver.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/math/SafeMath.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/token/ERC721/IERC721.sol#1): it allows old versions
+    - pragma solidity0.5.0 (swap-protocol/contracts/test/NonFungibleB.sol#1): it allows old versions
+    - pragma solidity0.5.0 (swap-protocol/contracts/test/NonFungibleA.sol#1): it allows old versions
+    - pragma solidity0.5.0 (swap-protocol/contracts/lib/Authorizable.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/access/Roles.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/token/ERC20/IERC20.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/token/ERC721/ERC721Mintable.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/introspection/IERC165.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/introspection/ERC165.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/utils/Address.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#1): it allows old versions
+    - pragma solidity0.5.0 (swap-protocol/contracts/Swap.sol#1): it allows old versions
+    - pragma solidity0.5.0 (swap-protocol/contracts/lib/Transferable.sol#1): it allows old versions
+    - pragma solidity^0.5.0 (openzeppelin-solidity/contracts/access/roles/MinterRole.sol#1): it allows old versions
+    - pragma solidity0.5.0 (swap-protocol/contracts/test/FungibleB.sol#1): it allows old versions
+Reference: https://github.com/trailofbits/slither/wiki/Detectors-Documentation#incorrect-version-of-solidity
+INFO:Detectors:
+Parameter 'new_address' of Migrations.upgrade (swap-protocol/contracts/Migrations.sol#19) is not in mixedCase
+Variable 'Migrations.last_completed_migration' (swap-protocol/contracts/Migrations.sol#5) is not in mixedCase
+Parameter '_data' of ERC721.safeTransferFrom (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#165) is not in mixedCase
+Function 'ERC721._exists' (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#175-178) is not in mixedCase
+Function 'ERC721._isApprovedOrOwner' (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#187-190) is not in mixedCase
+Function 'ERC721._mint' (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#198-206) is not in mixedCase
+Function 'ERC721._burn' (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#215-224) is not in mixedCase
+Function 'ERC721._burn' (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#231-233) is not in mixedCase
+Function 'ERC721._transferFrom' (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#242-254) is not in mixedCase
+Function 'ERC721._checkOnERC721Received' (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#265-274) is not in mixedCase
+Parameter '_data' of ERC721._checkOnERC721Received (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#265) is not in mixedCase
+Function 'ERC721._clearApproval' (openzeppelin-solidity/contracts/token/ERC721/ERC721.sol#280-284) is not in mixedCase
+Function 'ERC165._registerInterface' (openzeppelin-solidity/contracts/introspection/ERC165.sol#40-43) is not in mixedCase
+Function 'ERC20._transfer' (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#137-143) is not in mixedCase
+Function 'ERC20._mint' (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#152-158) is not in mixedCase
+Function 'ERC20._burn' (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#166-172) is not in mixedCase
+Function 'ERC20._burnFrom' (openzeppelin-solidity/contracts/token/ERC20/ERC20.sol#182-186) is not in mixedCase
+Parameter '_contract' of Transferable.doesContractImplementInterface (swap-protocol/contracts/lib/Transferable.sol#50) is not in mixedCase
+Parameter '_interfaceId' of Transferable.doesContractImplementInterface (swap-protocol/contracts/lib/Transferable.sol#50) is not in mixedCase
+Function 'MinterRole._addMinter' (openzeppelin-solidity/contracts/access/roles/MinterRole.sol#34-37) is not in mixedCase
+Function 'MinterRole._removeMinter' (openzeppelin-solidity/contracts/access/roles/MinterRole.sol#39-42) is not in mixedCase
+Reference: https://github.com/trailofbits/slither/wiki/Detectors-Documentation#conformance-to-solidity-naming-conventions
+INFO:Slither:. analyzed (22 contracts), 64 result(s) found
