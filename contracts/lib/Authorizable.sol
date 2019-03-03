@@ -8,13 +8,13 @@ contract Authorizable {
 
   event Authorization(
     address indexed approverAddress,
-    address delegateAddress,
+    address indexed delegateAddress,
     uint256 expiry
   );
 
   event Revocation(
     address indexed approverAddress,
-    address delegateAddress
+    address indexed delegateAddress
   );
 
   function authorize(address delegate, uint256 expiry) external returns (bool) {
@@ -31,9 +31,6 @@ contract Authorizable {
   }
 
   function isAuthorized(address approver, address delegate) internal view returns (bool) {
-    if (approvals[approver][delegate] > block.timestamp) {
-      return true;
-    }
-    return false;
+    return (approvals[approver][delegate] > block.timestamp);
   }
 }
