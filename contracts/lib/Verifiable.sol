@@ -113,4 +113,36 @@ contract Verifiable {
     }
     revert("INVALID_SIGNATURE_VERSION");
   }
+
+  function isValidLegacy(
+    address makerAddress,
+    uint makerAmount,
+    address makerToken,
+    address takerAddress,
+    uint takerAmount,
+    address takerToken,
+    uint256 expiration,
+    uint256 nonce,
+    uint8 v,
+    bytes32 r,
+    bytes32 s
+  ) public view returns (bool) {
+
+    return makerAddress == ecrecover(
+      keccak256(abi.encodePacked(
+        "\x19Ethereum Signed Message:\n32",
+        keccak256(abi.encodePacked(
+          byte(0),
+          this,
+          makerAddress,
+          makerAmount,
+          makerToken,
+          takerAddress,
+          takerAmount,
+          takerToken,
+          expiration,
+          nonce
+        )))),
+      v, r, s);
+  }
 }

@@ -408,7 +408,7 @@ contract('Swap', ([
         maker: {
           wallet: aliceAddress,
           token: tokenAST.address,
-          param: 200,
+          param: 100,
         },
         taker: {
           wallet: bobAddress,
@@ -425,11 +425,77 @@ contract('Swap', ([
     })
 
     it('Checks balances...', async () => {
-      ok(await balances(aliceAddress, [[tokenAST, 200], [tokenDAI, 130]]), 'Alice balances are incorrect')
-      ok(await balances(bobAddress, [[tokenAST, 750], [tokenDAI, 870]]), 'Bob balances are incorrect')
+      ok(await balances(aliceAddress, [[tokenAST, 300], [tokenDAI, 130]]), 'Alice balances are incorrect')
+      ok(await balances(bobAddress, [[tokenAST, 650], [tokenDAI, 870]]), 'Bob balances are incorrect')
       ok(await balances(carolAddress, [[tokenAST, 50], [tokenDAI, 0]]), 'Carol balances are incorrect')
     })
   })
+
+  describe('Fills (Legacy)', () => {
+    it('Checks that a V1 signature will fill', async () => {
+      const { order } = await orders.getOrder({
+        maker: {
+          wallet: aliceAddress,
+          token: tokenAST.address,
+          param: 100,
+        },
+        taker: {
+          wallet: bobAddress,
+          token: tokenDAI.address,
+          param: 20,
+        },
+      })
+
+      const signature = await signatures.getLegacySignature(order, aliceAddress, swapAddress)
+      emitted(await swapContract.fillLegacy(
+        order.maker.wallet,
+        order.maker.param,
+        order.maker.token,
+        order.taker.wallet,
+        order.taker.param,
+        order.taker.token,
+        order.expiry,
+        order.nonce,
+        signature.v,
+        signature.r,
+        signature.s,
+        { from: bobAddress },
+      ), 'Fill')
+    })
+
+    it('Checks that an invalid V1 signature will fail', async () => {
+      const { order } = await orders.getOrder({
+        maker: {
+          wallet: aliceAddress,
+          token: tokenAST.address,
+          param: 100,
+        },
+        taker: {
+          wallet: bobAddress,
+          token: tokenDAI.address,
+          param: 50,
+        },
+      })
+
+      // Signs with bobAddress rather than alice Address.
+      const signature = await signatures.getLegacySignature(order, bobAddress, swapAddress)
+      await reverted(swapContract.fillLegacy(
+        order.maker.wallet,
+        order.maker.param,
+        order.maker.token,
+        order.taker.wallet,
+        order.taker.param,
+        order.taker.token,
+        order.expiry,
+        order.nonce,
+        signature.v,
+        signature.r,
+        signature.s,
+        { from: bobAddress },
+      ), 'INVALID_LEGACY_SIGNATURE')
+    })
+  })
+
 
   describe('Deploying...', () => {
     it('Deployed test contract "ConcertTicket"', async () => {
@@ -520,8 +586,8 @@ contract('Swap', ([
     })
 
     it('Checks balances...', async () => {
-      ok(await balances(aliceAddress, [[tokenTicket, 0], [tokenKitty, 0], [tokenDAI, 280]]), 'Alice balances are incorrect')
-      ok(await balances(bobAddress, [[tokenTicket, 1], [tokenKitty, 0], [tokenDAI, 720]]), 'Bob balances are incorrect')
+      ok(await balances(aliceAddress, [[tokenTicket, 0], [tokenKitty, 0], [tokenDAI, 300]]), 'Alice balances are incorrect')
+      ok(await balances(bobAddress, [[tokenTicket, 1], [tokenKitty, 0], [tokenDAI, 700]]), 'Bob balances are incorrect')
       ok(await balances(carolAddress, [[tokenKitty, 1]]), 'Carol balances are incorrect')
     })
   })

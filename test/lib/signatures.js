@@ -48,4 +48,21 @@ module.exports = {
       s,
     }
   },
+  async getLegacySignature(order, signer, verifyingContract) {
+    // using EIP 191 signature scheme version 0 (intended validator)
+    const msg = web3.utils.soliditySha3(
+      { type: 'bytes1', value: '0x0' },
+      { type: 'address', value: verifyingContract },
+      { type: 'address', value: order.maker.wallet },
+      { type: 'uint256', value: order.maker.param },
+      { type: 'address', value: order.maker.token },
+      { type: 'address', value: order.taker.wallet },
+      { type: 'uint256', value: order.taker.param },
+      { type: 'address', value: order.taker.token },
+      { type: 'uint256', value: order.expiry },
+      { type: 'uint256', value: order.nonce },
+    )
+    const sig = await web3.eth.sign(ethUtil.bufferToHex(msg), signer)
+    return ethUtil.fromRpcSig(sig)
+  },
 }
