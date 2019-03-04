@@ -70,7 +70,7 @@ function fill(Order memory order, Signature memory signature) public payable
 
 ### Cancel Orders
 
-Provide an array of nonces, unique by maker address, to mark one or more orders as filled.
+Provide an array of nonces, unique by maker address, to mark one or more orders as canceled.
 ```Solidity
 function cancel(uint256[] memory nonces) public
 ```
@@ -175,7 +175,8 @@ The following messages are provided when a fill transaction fails and reverts.
 
 | Reason | Scenario |
 | :--- | :--- |
-| `ALREADY_FILLED` | Order has already been filled or canceled by its `nonce` value. |
+| `ORDER_ALREADY_FILLED` | Order has already been filled by its `nonce` value. |
+| `ORDER_ALREADY_CANCELED` | Order has already been canceled by its `nonce` value. |
 | `ORDER_EXPIRED` | Order has an `expiry` lower than the current block time. |
 | `SENDER_NOT_AUTHORIZED` | Order has been sent by an account that has not been authorized to take it. |
 | `SIGNER_NOT_AUTHORIZED` | Order has been signed by an account that has not been authorized to make it. |
