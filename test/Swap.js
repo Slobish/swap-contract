@@ -110,7 +110,7 @@ contract('Swap', ([
     })
 
     it('Checks that Bob cannot fill the same order again (200 AST for 50 DAI)', async () => {
-      await reverted(swapContract.fill(_order, _signature, { from: bobAddress }), 'ALREADY_FILLED')
+      await reverted(swapContract.fill(_order, _signature, { from: bobAddress }), 'ORDER_ALREADY_FILLED')
     })
 
     it('Checks that Alice cannot trade more than approved (200 AST)', async () => {
@@ -335,7 +335,7 @@ contract('Swap', ([
     })
 
     it('Checks that Bob is unable to fill the order with nonce "12345"', async () => {
-      await reverted(swapContract.fill(_order, _signature, { from: bobAddress }), 'ALREADY_FILLED')
+      await reverted(swapContract.fill(_order, _signature, { from: bobAddress }), 'ORDER_ALREADY_CANCELED')
     })
 
     it('Checks existing balances (Alice 800 AST and 50 DAI, Bob 200 AST and 950 DAI)', async () => {
