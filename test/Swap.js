@@ -579,7 +579,7 @@ contract('Swap', ([
       })
       const signature = signatures.getPrivateKeySignature(order, evePrivKey, swapAddress)
       signature.version = Buffer.from('00', 'hex')
-      await reverted(swapContract.fill(order, signature, { from: bobAddress }), 'INVALID_SIGNATURE_VERSION')
+      await reverted(swapContract.fill(order, signature, { from: bobAddress }), 'INVALID_MAKER_SIGNATURE')
     })
     it('Checks that a private key signature is valid', async () => {
       const { order } = await orders.getOrder({
