@@ -614,4 +614,29 @@ contract('Swap', ([
       emitted(await swapContract.fill(order, signature, { from: aliceAddress }), 'Fill')
     })
   })
+
+  describe('Reduce entry points for Swap with Transferable', () => {
+
+    it('Alice approves Swap to spend the AST', async () => {
+      emitted(await tokenDAI.approve(swapAddress, 10, { from: aliceAddress }), 'Approval')
+    })
+
+    it('Checks balances...', async () => {
+      ok(balances(aliceAddress, [[tokenAST, 800], [tokenDAI, 50]]), 'Alice balances are incorrect')
+      ok(balances(bobAddress, [[tokenAST, 200], [tokenDAI, 950]]), 'Bob balances are incorrect')
+    })
+
+    it('Bob approves Swap to spend his AST', async () => {
+      emitted(await tokenAST.approve(swapAddress, 10, { from: bobAddress }), 'Approval')
+    })
+
+    it('Checks that Bob is unable to call swap with Alice through Transferable', async () => {
+      none(await swapContract.swap(bobAddress, 10, tokenAST.address, aliceAddress, 10, tokenDAI.address, { from: bobAddress }), 'Transfer')
+    })
+
+    it('Checks that balances do not change post calling swap', async () => {
+      ok(balances(aliceAddress, [[tokenAST, 80], [tokenDAI, 50]]), 'Alice balances are incorrect')
+      ok(balances(bobAddress, [[tokenAST, 200], [tokenDAI, 950]]), 'Bob balances are incorrect')
+    })
+  })
 })
