@@ -77,7 +77,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
     * @param s bytes32
     *
     */
-  function fillLegacy(
+  function fill(
       address makerAddress,
       uint256 makerAmount,
       address makerToken,
