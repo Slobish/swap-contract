@@ -11,8 +11,8 @@ import "./lib/Verifiable.sol";
 */
 contract Swap is Authorizable, Transferable, Verifiable {
 
-  // Maps maker to map of nonces marking fills (0x01) and cancels (0x02).
-  mapping (address => mapping (uint256 => byte)) public fills;
+  // Maps makers to their nonces as filled (0x01) or canceled (0x02).
+  mapping (address => mapping (uint256 => byte)) public makers;
 
   // Event emitted on order fill.
   event Fill(
@@ -108,13 +108,13 @@ contract Swap is Authorizable, Transferable, Verifiable {
 
   }
 
-  /**   @dev Cancels orders by marking filled.
+  /**   @dev Mark an array of nonces as canceled (0x02).
     *   @param nonces uint256[]
     */
   function cancel(uint256[] memory nonces) public {
     for (uint256 i = 0; i < nonces.length; i++) {
-      if (fills[msg.sender][nonces[i]] == 0x00) {
-        fills[msg.sender][nonces[i]] = 0x02;
+      if (makers[msg.sender][nonces[i]] == 0x00) {
+        makers[msg.sender][nonces[i]] = 0x02;
         emit Cancel(msg.sender, nonces[i]);
       }
     }
@@ -126,11 +126,11 @@ contract Swap is Authorizable, Transferable, Verifiable {
     */
   function execute(Order memory order) internal {
     // Ensure the order has not been filled.
-    require(fills[order.maker.wallet][order.nonce] != 0x01,
+    require(makers[order.maker.wallet][order.nonce] != 0x01,
       "ORDER_ALREADY_FILLED");
 
     // Ensure the order has not been canceled.
-    require(fills[order.maker.wallet][order.nonce] != 0x02,
+    require(makers[order.maker.wallet][order.nonce] != 0x02,
       "ORDER_ALREADY_CANCELED");
 
     // Ensure the order has not expired.
@@ -143,8 +143,8 @@ contract Swap is Authorizable, Transferable, Verifiable {
         "SENDER_NOT_AUTHORIZED");
     }
 
-    // Mark the order filled.
-    fills[order.maker.wallet][order.nonce] = 0x01;
+    // Mark the nonce as filled (0x01).
+    makers[order.maker.wallet][order.nonce] = 0x01;
 
     // If the takerToken is null, expect that this is an order for ether.
     if (order.taker.token == address(0)) {
