@@ -111,6 +111,6 @@ contract Verifiable {
           signature.v, signature.r, signature.s
       );
     }
-    revert("INVALID_SIGNATURE_VERSION");
+    return false;
   }
 }

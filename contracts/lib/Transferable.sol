@@ -8,7 +8,6 @@ import "../../node_modules/openzeppelin-solidity/contracts/introspection/ERC165C
 contract Transferable {
   using ERC165Checker for address;
 
-  bytes4 internal constant INTERFACE_ERC165 = 0x01ffc9a7;
   bytes4 internal constant INTERFACE_ERC721 = 0x80ac58cd;
 
   function swap(
@@ -45,7 +44,7 @@ contract Transferable {
     } else {
       require(IERC20(token).allowance(from, address(this)) >= param, "INSUFFICIENT_ALLOWANCE");
       require(IERC20(token).balanceOf(from) >= param, "INSUFFICIENT_BALANCE");
-      IERC20(token).transferFrom(from, to, param);
+      require(IERC20(token).transferFrom(from, to, param));
     }
   }
 }
