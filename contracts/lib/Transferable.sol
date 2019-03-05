@@ -1,8 +1,8 @@
-pragma solidity 0.5.0;
+pragma solidity ^0.5.0;
 
-import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
-import "openzeppelin-solidity/contracts/token/ERC721/IERC721.sol";
-import "openzeppelin-solidity/contracts/introspection/ERC165Checker.sol";
+import "../../node_modules/openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
+import "../../node_modules/openzeppelin-solidity/contracts/token/ERC721/IERC721.sol";
+import "../../node_modules/openzeppelin-solidity/contracts/introspection/ERC165Checker.sol";
 
 
 contract Transferable {
