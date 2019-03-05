@@ -11,6 +11,10 @@ import "./lib/Verifiable.sol";
 */
 contract Swap is Authorizable, Transferable, Verifiable {
 
+  byte constant internal UNFILLED = 0x00;
+  byte constant internal FILLED = 0x01;
+  byte constant internal CANCELED = 0x02;
+
   // Maps makers to their nonces as filled (0x01) or canceled (0x02).
   mapping (address => mapping (uint256 => byte)) public makers;
 
@@ -126,11 +130,11 @@ contract Swap is Authorizable, Transferable, Verifiable {
     */
   function execute(Order memory order) internal {
     // Ensure the order has not been filled.
-    require(makers[order.maker.wallet][order.nonce] != 0x01,
+    require(makers[order.maker.wallet][order.nonce] != FILLED,
       "ORDER_ALREADY_FILLED");
 
     // Ensure the order has not been canceled.
-    require(makers[order.maker.wallet][order.nonce] != 0x02,
+    require(makers[order.maker.wallet][order.nonce] != CANCELED,
       "ORDER_ALREADY_CANCELED");
 
     // Ensure the order has not expired.
@@ -144,7 +148,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
     }
 
     // Mark the nonce as filled (0x01).
-    makers[order.maker.wallet][order.nonce] = 0x01;
+    makers[order.maker.wallet][order.nonce] = FILLED;
 
     // If the takerToken is null, expect that this is an order for ether.
     if (order.taker.token == address(0)) {
@@ -195,10 +199,11 @@ contract Swap is Authorizable, Transferable, Verifiable {
     }
 
     emit Fill(
-        order.maker.wallet, order.maker.param, order.maker.token,
-        order.taker.wallet, order.taker.param, order.taker.token,
-        order.affiliate.wallet, order.affiliate.param, order.affiliate.token,
-        order.nonce, order.expiry, order.signer );
+      order.maker.wallet, order.maker.param, order.maker.token,
+      order.taker.wallet, order.taker.param, order.taker.token,
+      order.affiliate.wallet, order.affiliate.param, order.affiliate.token,
+      order.nonce, order.expiry, order.signer
+    );
   }
 
 }
