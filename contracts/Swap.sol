@@ -11,7 +11,7 @@ import "./lib/Verifiable.sol";
 */
 contract Swap is Authorizable, Transferable, Verifiable {
 
-  // Maps maker to map of nonces marking fills (0x01) and cancels (0x02).
+  // Mapping of maker to mapping of nonces marking fills (0x01) and cancels (0x02).
   mapping (address => mapping (uint256 => byte)) public fills;
 
   // Event emitted on order fill.
@@ -55,13 +55,13 @@ contract Swap is Authorizable, Transferable, Verifiable {
 
     // Check that a specified sender is the actual sender.
     if (msg.sender != order.taker.wallet) {
-      require(isAuthorized(order.taker.wallet, msg.sender),
+      require(isAuthorized(order.taker.wallet, msg.sender, order.maker.token),
         "SENDER_NOT_AUTHORIZED");
     }
 
     // Check that the order has a valid signature.
     if (order.signer != address(0)) {
-      require(isAuthorized(order.maker.wallet, order.signer),
+      require(isAuthorized(order.maker.wallet, order.signer, order.maker.token),
         "SIGNER_NOT_AUTHORIZED");
 
       require(isValid(order, order.signer, signature),

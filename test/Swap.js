@@ -201,11 +201,11 @@ contract('Swap', ([
 
     it('Alice attempts to authorize David to make orders on her behalf with an invalid expiry', async () => {
       const authExpiry = await getLatestTimestamp()
-      await reverted(swapContract.authorize(davidAddress, authExpiry, { from: aliceAddress }), 'INVALID_EXPIRY')
+      await reverted(swapContract.authorize(davidAddress, tokenAST.address, authExpiry, { from: aliceAddress }), 'INVALID_EXPIRY')
     })
 
     it('Alice authorizes David to make orders on her behalf', async () => {
-      emitted(await swapContract.authorize(davidAddress, defaultAuthExpiry, { from: aliceAddress }), 'Authorization')
+      emitted(await swapContract.authorize(davidAddress, tokenAST.address, defaultAuthExpiry, { from: aliceAddress }), 'Authorization')
     })
 
     it('Alice approves Swap to spend the rest of her AST', async () => {
@@ -217,7 +217,7 @@ contract('Swap', ([
     })
 
     it('Alice revokes authorization from David', async () => {
-      emitted(await swapContract.revoke(davidAddress, { from: aliceAddress }), 'Revocation')
+      emitted(await swapContract.revoke(davidAddress, tokenAST.address, { from: aliceAddress }), 'Revocation')
     })
 
     it('Checks that David can no longer make orders on behalf of Alice', async () => {
@@ -260,7 +260,7 @@ contract('Swap', ([
     })
 
     it('Bob authorizes Carol to take orders on his behalf', async () => {
-      emitted(await swapContract.authorize(carolAddress, defaultAuthExpiry, { from: bobAddress }), 'Authorization')
+      emitted(await swapContract.authorize(carolAddress, tokenAST.address, defaultAuthExpiry, { from: bobAddress }), 'Authorization')
     })
 
     it('Checks that Carol can take an order on behalf of Bob', async () => {
@@ -268,7 +268,7 @@ contract('Swap', ([
     })
 
     it('Bob revokes sender authorization from Carol', async () => {
-      emitted(await swapContract.revoke(carolAddress, { from: bobAddress }), 'Revocation')
+      emitted(await swapContract.revoke(carolAddress, tokenAST.address, { from: bobAddress }), 'Revocation')
     })
 
     it('Checks that Carol can no longer take orders on behalf of Bob', async () => {
@@ -286,11 +286,11 @@ contract('Swap', ([
 
   describe('Signer and Sender Delegation (Combined)', () => {
     it('Alice approves David to make orders on her behalf', async () => {
-      emitted(await swapContract.authorize(davidAddress, defaultAuthExpiry, { from: aliceAddress }), 'Authorization')
+      emitted(await swapContract.authorize(davidAddress, tokenAST.address, defaultAuthExpiry, { from: aliceAddress }), 'Authorization')
     })
 
     it('Bob approves Carol to take orders on his behalf', async () => {
-      emitted(await swapContract.authorize(carolAddress, defaultAuthExpiry, { from: bobAddress }), 'Authorization')
+      emitted(await swapContract.authorize(carolAddress, tokenAST.address, defaultAuthExpiry, { from: bobAddress }), 'Authorization')
     })
 
     it('David makes an order for Alice, Carol takes the order for Bob', async () => {
@@ -544,7 +544,7 @@ contract('Swap', ([
     })
 
     it('Alice authorizes Eve to make orders on her behalf', async () => {
-      emitted(await swapContract.authorize(eveAddress, defaultAuthExpiry, { from: aliceAddress }), 'Authorization')
+      emitted(await swapContract.authorize(eveAddress, tokenAST.address, defaultAuthExpiry, { from: aliceAddress }), 'Authorization')
     })
 
     it('Checks that an invalid delegate signature will revert', async () => {
@@ -552,6 +552,7 @@ contract('Swap', ([
         signer: eveAddress,
         maker: {
           wallet: aliceAddress,
+          token: tokenAST.address,
         },
         taker: {
           wallet: bobAddress,
