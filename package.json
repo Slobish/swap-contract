@@ -1,8 +1,6 @@
 {
-  "name": "testing-sigs",
-  "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT",
+  "name": "swap-protocol",
+  "version": "2.0.0",
   "scripts": {
     "compile": "yarn truffle compile",
     "coverage": "yarn solidity-coverage",
