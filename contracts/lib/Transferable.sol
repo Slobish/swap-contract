@@ -18,8 +18,8 @@ contract Transferable {
       uint256 takerParam,
       address takerToken
   ) internal {
-    transfer(makerAddress, takerAddress, makerParam, makerToken);
-    transfer(takerAddress, makerAddress, takerParam, takerToken);
+    transfer("MAKER", makerAddress, takerAddress, makerParam, makerToken);
+    transfer("TAKER", takerAddress, makerAddress, takerParam, takerToken);
   }
 
   function send(
@@ -34,16 +34,19 @@ contract Transferable {
   }
 
   function transfer(
-      address from,
-      address to,
-      uint256 param,
-      address token
+    bytes memory side,
+    address from,
+    address to,
+    uint256 param,
+    address token
   ) internal {
     if (token._supportsInterface(INTERFACE_ERC721)) {
       IERC721(token).safeTransferFrom(from, to, param);
     } else {
-      require(IERC20(token).allowance(from, address(this)) >= param, "INSUFFICIENT_ALLOWANCE");
-      require(IERC20(token).balanceOf(from) >= param, "INSUFFICIENT_BALANCE");
+      require(IERC20(token).allowance(from, address(this)) >= param,
+        string(abi.encodePacked(side, "_INSUFFICIENT_ALLOWANCE")));
+      require(IERC20(token).balanceOf(from) >= param,
+        string(abi.encodePacked(side, "_INSUFFICIENT_BALANCE")));
       require(IERC20(token).transferFrom(from, to, param));
     }
   }
