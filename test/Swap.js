@@ -355,7 +355,7 @@ contract('Swap', ([
     const value = 1
 
     it('Checks allowance (Alice 200 AST)', async () => {
-      ok(allowances(aliceAddress, [[tokenAST, 200]]), 'Alice has not approved 200 AST')
+      ok(allowances(aliceAddress, swapAddress, [[tokenAST, 200]]), 'Alice has not approved 200 AST')
     })
 
     it('Checks that Bob cannot fill an order for ETH without sending ether', async () => {

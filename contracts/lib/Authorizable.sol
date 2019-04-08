@@ -27,7 +27,6 @@ contract Authorizable {
   function revoke(address delegate) external returns (bool) {
     delete approvals[msg.sender][delegate];
     emit Revocation(msg.sender, delegate);
-    return true;
   }
 
   function isAuthorized(address approver, address delegate) internal view returns (bool) {
