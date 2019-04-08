@@ -7,7 +7,7 @@ module.exports = {
 
   async allowances(account, withdrawer, allowances) {
     let index = allowances.length
-    while (--index) {
+    while (index--) {
       if ((await allowances[index][0].allowance(account, withdrawer)).toNumber()
         !== allowances[index][1]) {
         return false

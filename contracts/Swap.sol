@@ -16,7 +16,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
   byte constant private CANCELED = 0x02;
 
   // Maps makers to their nonces as filled (0x01) or canceled (0x02).
-  mapping (address => mapping (uint256 => byte)) public orderStatus;
+  mapping (address => mapping (uint256 => byte)) public makerOrderStatus;
 
   // Event emitted on order fill.
   event Fill(
@@ -117,8 +117,8 @@ contract Swap is Authorizable, Transferable, Verifiable {
     */
   function cancel(uint256[] memory nonces) public {
     for (uint256 i = 0; i < nonces.length; i++) {
-      if (orderStatus[msg.sender][nonces[i]] == UNFILLED) {
-        orderStatus[msg.sender][nonces[i]] = CANCELED;
+      if (makerOrderStatus[msg.sender][nonces[i]] == UNFILLED) {
+        makerOrderStatus[msg.sender][nonces[i]] = CANCELED;
         emit Cancel(msg.sender, nonces[i]);
       }
     }
@@ -130,11 +130,11 @@ contract Swap is Authorizable, Transferable, Verifiable {
     */
   function execute(Order memory order) internal {
     // Ensure the order has not been filled.
-    require(orderStatus[order.maker.wallet][order.nonce] != FILLED,
+    require(makerOrderStatus[order.maker.wallet][order.nonce] != FILLED,
       "ORDER_ALREADY_FILLED");
 
     // Ensure the order has not been canceled.
-    require(orderStatus[order.maker.wallet][order.nonce] != CANCELED,
+    require(makerOrderStatus[order.maker.wallet][order.nonce] != CANCELED,
       "ORDER_ALREADY_CANCELED");
 
     // Ensure the order has not expired.
@@ -148,7 +148,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
     }
 
     // Mark the nonce as filled (0x01).
-    orderStatus[order.maker.wallet][order.nonce] = FILLED;
+    makerOrderStatus[order.maker.wallet][order.nonce] = FILLED;
 
     // If the takerToken is null, expect that this is an order for ether.
     if (order.taker.token == address(0)) {
