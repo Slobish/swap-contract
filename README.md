@@ -29,7 +29,7 @@ Compensate those who connect peers.
 
 ## Tools
 
-Contracts written in [Solidity 0.5.0](https://solidity.readthedocs.io/en/v0.5.0/) and tests written in [Mocha / Chai](https://truffleframework.com/docs/truffle/testing/writing-tests-in-javascript) with JavaScript.
+Contracts written in [solidity 0.5.7](https://solidity.readthedocs.io/en/v0.5.7/) and tests written in [Mocha / Chai](https://truffleframework.com/docs/truffle/testing/writing-tests-in-javascript) with JavaScript.
 
 | Command | Description |
 | :--- | :--- |
