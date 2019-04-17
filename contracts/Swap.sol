@@ -7,7 +7,7 @@ import "./lib/Verifiable.sol";
 
 
 /**
-* @title Swap Protocol
+* @title Implements Swap protocol
 */
 contract Swap is Authorizable, Transferable, Verifiable {
 
@@ -41,10 +41,9 @@ contract Swap is Authorizable, Transferable, Verifiable {
   );
 
   /**
-    * @dev Swap Protocol V2
-    *
-    * @param order Order
-    * @param signature Signature
+    * @dev fill function that supports new Swap Protocol V2 signature
+    * @param order Order signed order that contains the struct Order that references a swap
+    * @param signature Signature contains the struct Signature used in Swap V2
     */
   function fill(Order memory order, Signature memory signature) public payable {
 
@@ -66,8 +65,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
   }
 
   /**
-    * @dev Swap Protocol V1
-    *
+    * @dev fill function that supports Swap Protocol V1 function signature
     * @param makerAddress address
     * @param makerAmount uint256
     * @param makerToken address
@@ -79,7 +77,6 @@ contract Swap is Authorizable, Transferable, Verifiable {
     * @param v uint8
     * @param r bytes32
     * @param s bytes32
-    *
     */
   function fill(
       address makerAddress,
