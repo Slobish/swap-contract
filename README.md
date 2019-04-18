@@ -187,3 +187,9 @@ The following messages are provided when a fill transaction fails and reverts.
 | `INSUFFICIENT_ALLOWANCE` | Transfer was attempted but the sender has not approved the Swap contract to move the balance. |
 | `INSUFFICIENT_BALANCE` | Transfer was attempted but the sender has an insufficient balance. |
 | `INVALID_EXPIRY` | Delegate authorization was attempted but the expiry has already passed. |
+
+With devTools:
+https://github.com/0xProject/dev-tools-truffle-example/issues/4
+
+Next steps tring to use Websocket provider
+https://github.com/MetaMask/web3-provider-engine/blob/master/subproviders/websocket.js
