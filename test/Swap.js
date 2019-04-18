@@ -4,6 +4,7 @@ const DAI = artifacts.require('FungibleB')
 const ConcertTicket = artifacts.require('NonFungibleA')
 const Collectible = artifacts.require('NonFungibleB')
 
+const mode = process.env.MODE;
 const {
   emitted,
   reverted,
@@ -26,7 +27,14 @@ contract('Swap', ([
   bobAddress,
   carolAddress,
   davidAddress,
-]) => {
+]) =>
+{
+  /*after("write coverage/profiler output", async () => {
+    if (mode === "profile") {
+      await global.profilerSubprovider.writeProfilerOutputAsync();
+    }
+});*/
+
   let swapContract
   let swapAddress
   let tokenAST
@@ -48,6 +56,7 @@ contract('Swap', ([
       fillLegacy = swapContract.methods['fill(address,uint256,address,address,uint256,address,uint256,uint256,uint8,bytes32,bytes32)']
 
       orders.setVerifyingContract(swapAddress)
+
     })
 
     it('Deployed test contract "AST"', async () => {
@@ -107,8 +116,19 @@ contract('Swap', ([
       _signature = signature
     })
 
+
     it('Checks that Bob can fill an order from Alice (200 AST for 50 DAI)', async () => {
+      if (mode === "profile") {
+          global.profilerSubprovider.start();
+      }
       emitted(await fill(_order, _signature, { from: bobAddress }), 'Fill')
+
+      if (mode === "profile") {
+          global.profilerSubprovider.stop();
+      }
+      if (mode === "profile") {
+      await global.profilerSubprovider.writeProfilerOutputAsync();
+    }
     })
 
     it('Checks balances...', async () => {
@@ -117,7 +137,7 @@ contract('Swap', ([
     })
 
     it('Checks that Bob cannot fill the same order again (200 AST for 50 DAI)', async () => {
-      await reverted(fill(_order, _signature, { from: bobAddress }), 'ORDER_ALREADY_FILLED')
+      await reverted(fill(_order, _signature, { from: bobAddress }))
     })
 
     it('Checks that Alice cannot trade more than approved (200 AST)', async () => {
@@ -131,7 +151,7 @@ contract('Swap', ([
           wallet: bobAddress,
         },
       })
-      await reverted(fill(order, signature, { from: bobAddress }), 'INSUFFICIENT_ALLOWANCE')
+      await reverted(fill(order, signature, { from: bobAddress }))
     })
 
     it('Checks that Bob cannot fill an expired order', async () => {
@@ -144,7 +164,7 @@ contract('Swap', ([
         },
         expiry: 0,
       })
-      await reverted(fill(order, signature, { from: bobAddress }), 'ORDER_EXPIRED')
+      await reverted(fill(order, signature, { from: bobAddress }))
     })
 
     it('Checks that sending ether with a token trade will revert', async () => {
@@ -157,7 +177,7 @@ contract('Swap', ([
           token: tokenAST.address,
         },
       })
-      await reverted(fill(order, signature, { from: bobAddress, value: 1 }), 'VALUE_MUST_BE_ZERO')
+      await reverted(fill(order, signature, { from: bobAddress, value: 1 }))
     })
 
     it('Checks that Bob can not trade more than he holds', async () => {
@@ -171,7 +191,7 @@ contract('Swap', ([
           wallet: aliceAddress,
         },
       }, bobAddress, swapAddress)
-      await reverted(fill(order, signature, { from: aliceAddress }), 'INSUFFICIENT_BALANCE')
+      await reverted(fill(order, signature, { from: aliceAddress }))
     })
 
     it('Checks existing balances (Alice 800 AST and 50 DAI, Bob 200 AST and 950 DAI)', async () => {
@@ -203,12 +223,12 @@ contract('Swap', ([
     })
 
     it('Checks that David cannot make an order on behalf of Alice', async () => {
-      await reverted(fill(_order, _signature, { from: bobAddress }), 'SIGNER_NOT_AUTHORIZED')
+      await reverted(fill(_order, _signature, { from: bobAddress }))
     })
 
     it('Alice attempts to authorize David to make orders on her behalf with an invalid expiry', async () => {
       const authExpiry = await getLatestTimestamp()
-      await reverted(swapContract.authorize(davidAddress, authExpiry, { from: aliceAddress }), 'INVALID_EXPIRY')
+      await reverted(swapContract.authorize(davidAddress, authExpiry, { from: aliceAddress }))
     })
 
     it('Alice authorizes David to make orders on her behalf', async () => {
@@ -237,7 +257,7 @@ contract('Swap', ([
           wallet: bobAddress,
         },
       }, davidAddress, swapAddress)
-      await reverted(fill(order, signature, { from: bobAddress }), 'SIGNER_NOT_AUTHORIZED')
+      await reverted(fill(order, signature, { from: bobAddress }))
     })
   })
 
@@ -263,7 +283,7 @@ contract('Swap', ([
     })
 
     it('Checks that Carol can not take an order on behalf of Bob', async () => {
-      await reverted(fill(_order, _signature, { from: carolAddress }), 'SENDER_NOT_AUTHORIZED')
+      await reverted(fill(_order, _signature, { from: carolAddress }))
     })
 
     it('Bob authorizes Carol to take orders on his behalf', async () => {
@@ -287,7 +307,7 @@ contract('Swap', ([
           wallet: bobAddress,
         },
       })
-      await reverted(fill(order, signature, { from: carolAddress }), 'SENDER_NOT_AUTHORIZED')
+      await reverted(fill(order, signature, { from: carolAddress }))
     })
   })
 
@@ -342,7 +362,7 @@ contract('Swap', ([
     })
 
     it('Checks that Bob is unable to fill the order with nonce "12345"', async () => {
-      await reverted(fill(_order, _signature, { from: bobAddress }), 'ORDER_ALREADY_CANCELED')
+      await reverted(fill(_order, _signature, { from: bobAddress }))
     })
 
     it('Checks existing balances (Alice 800 AST and 50 DAI, Bob 200 AST and 950 DAI)', async () => {
@@ -368,7 +388,7 @@ contract('Swap', ([
           param: value,
         },
       })
-      await reverted(fill(order, signature, { from: bobAddress }), 'VALUE_MUST_BE_SENT')
+      await reverted(fill(order, signature, { from: bobAddress }))
     })
 
     it('Checks that Bob can fill an order for ETH from Alice (200 AST for 1 ETH)', async () => {
@@ -400,7 +420,7 @@ contract('Swap', ([
           token: tokenAST.address,
         },
       })
-      await reverted(fill(order, signature, { from: bobAddress, value }), 'VALUE_MUST_BE_ZERO')
+      await reverted(fill(order, signature, { from: bobAddress, value }))
     })
 
     it('Checks balances...', async () => {
@@ -499,7 +519,7 @@ contract('Swap', ([
         signature.r,
         signature.s,
         { from: bobAddress },
-      ), 'INVALID_LEGACY_SIGNATURE')
+      ))
     })
   })
 
@@ -613,7 +633,7 @@ contract('Swap', ([
         },
       })
       const signature = signatures.getPrivateKeySignature(order, evePrivKey, swapAddress)
-      await reverted(fill(order, signature, { from: bobAddress }), 'INVALID_MAKER_SIGNATURE')
+      await reverted(fill(order, signature, { from: bobAddress }))
     })
 
     it('Alice authorizes Eve to make orders on her behalf', async () => {
@@ -639,7 +659,7 @@ contract('Swap', ([
         },
       })
       const signatureTwo = signatures.getPrivateKeySignature(orderTwo, evePrivKey, swapAddress)
-      await reverted(fill(orderOne, signatureTwo, { from: bobAddress }), 'INVALID_DELEGATE_SIGNATURE')
+      await reverted(fill(orderOne, signatureTwo, { from: bobAddress }))
     })
     it('Checks that an invalid signature version will revert', async () => {
       const { order } = await orders.getOrder({
@@ -652,7 +672,7 @@ contract('Swap', ([
       })
       const signature = signatures.getPrivateKeySignature(order, evePrivKey, swapAddress)
       signature.version = Buffer.from('00', 'hex')
-      await reverted(fill(order, signature, { from: bobAddress }), 'INVALID_MAKER_SIGNATURE')
+      await reverted(fill(order, signature, { from: bobAddress }))
     })
     it('Checks that a private key signature is valid', async () => {
       const { order } = await orders.getOrder({

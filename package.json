@@ -25,6 +25,15 @@
     "truffle-security": "^1.0.0"
   },
   "dependencies": {
-    "openzeppelin-solidity": "^2.2.0"
+    "@0x/sol-compiler": "^3.1.0",
+    "@0x/sol-coverage": "3.0.3",
+    "@0x/sol-profiler": "^3.1.5",
+    "@0x/sol-trace": "^2.0.5",
+    "@0x/subproviders": "^2.1.11",
+    "istanbul": "^0.4.5",
+    "openzeppelin-solidity": "^2.2.0",
+    "opn-cli": "^4.0.0",
+    "shx": "^0.3.2",
+    "web3-provider-engine": "^14.1.0"
   }
 }
