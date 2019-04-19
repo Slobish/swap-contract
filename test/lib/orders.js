@@ -19,7 +19,7 @@ module.exports = {
   },
   async getOrder({
     expiry = this.generateExpiry(),
-    nonce = this.generateNonce(),
+    id = this.generateNonce(),
     signer = NULL_ADDRESS,
     maker = defaults.Party,
     taker = defaults.Party,
@@ -27,7 +27,7 @@ module.exports = {
   }) {
     const order = {
       expiry,
-      nonce,
+      id,
       signer,
       maker: { ...defaults.Party, ...maker },
       taker: { ...defaults.Party, ...taker },

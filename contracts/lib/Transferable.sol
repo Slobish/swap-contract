@@ -18,8 +18,8 @@ contract Transferable {
       uint256 takerParam,
       address takerToken
   ) internal {
-    transfer("MAKER", makerAddress, takerAddress, makerParam, makerToken);
-    transfer("TAKER", takerAddress, makerAddress, takerParam, takerToken);
+    transferSafe("MAKER", makerAddress, takerAddress, makerParam, makerToken);
+    transferSafe("TAKER", takerAddress, makerAddress, takerParam, takerToken);
   }
 
   function send(
@@ -33,7 +33,31 @@ contract Transferable {
     wallet.transfer(value);
   }
 
-  function transfer(
+  function transferFungible(
+    address token,
+    address from,
+    address to,
+    uint256 param
+  ) internal {
+    require(IERC20(token).transferFrom(from, to, param));
+  }
+
+  function transferAny(
+    address token,
+    address from,
+    address to,
+    uint256 param
+  ) internal {
+    if (token._supportsInterface(INTERFACE_ERC721)) {
+      IERC721(token)
+        .safeTransferFrom(from, to, param);
+    } else {
+      require(IERC20(token)
+        .transferFrom(from, to, param));
+    }
+  }
+
+  function transferSafe(
     bytes memory side,
     address from,
     address to,

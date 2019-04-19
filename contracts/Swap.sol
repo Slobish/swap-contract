@@ -11,15 +11,15 @@ import "./lib/Verifiable.sol";
 */
 contract Swap is Authorizable, Transferable, Verifiable {
 
-  byte constant private UNFILLED = 0x00;
-  byte constant private FILLED = 0x01;
+  byte constant private OPEN = 0x00;
+  byte constant private COMPLETED = 0x01;
   byte constant private CANCELED = 0x02;
 
-  // Maps makers to their nonces as filled (0x01) or canceled (0x02).
+  // Maps makers to orders by ID as completed (0x01) or canceled (0x02).
   mapping (address => mapping (uint256 => byte)) public makerOrderStatus;
 
-  // Event emitted on order fill.
-  event Fill(
+  // Event emitted on swap.
+  event Swap(
     address indexed makerAddress,
     uint256 makerParam,
     address makerToken,
@@ -29,15 +29,25 @@ contract Swap is Authorizable, Transferable, Verifiable {
     address affiliateAddress,
     uint256 affiliateParam,
     address affiliateToken,
-    uint256 indexed nonce,
-    uint256 expiry,
+    uint256 indexed id,
     address signer
+  );
+
+  // Event emitted on simple swap.
+  event Swap(
+    address indexed makerAddress,
+    uint256 makerParam,
+    address makerToken,
+    address takerAddress,
+    uint256 takerParam,
+    address takerToken,
+    uint256 indexed id
   );
 
   // Event emitted on order cancel.
   event Cancel(
     address indexed makerAddress,
-    uint256 nonce
+    uint256 id
   );
 
   /**
@@ -46,7 +56,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
     * @param order Order
     * @param signature Signature
     */
-  function fill(Order memory order, Signature memory signature) public payable {
+  function swap(Order calldata order, Signature calldata signature) external payable {
 
     // Check that the V2 signature is valid.
     if (order.signer != address(0)) {
@@ -68,58 +78,81 @@ contract Swap is Authorizable, Transferable, Verifiable {
   /**
     * @dev Swap Protocol V1
     *
-    * @param makerAddress address
-    * @param makerAmount uint256
+    * @param makerWallet address
+    * @param makerParam uint256
     * @param makerToken address
-    * @param takerAddress address
-    * @param takerAmount uint256
+    * @param takerWallet address
+    * @param takerParam uint256
     * @param takerToken address
-    * @param expiration uint256
-    * @param nonce uint256
+    * @param expiry uint256
+    * @param id uint256
     * @param v uint8
     * @param r bytes32
     * @param s bytes32
     *
     */
-  function fill(
-      address makerAddress,
-      uint256 makerAmount,
-      address makerToken,
-      address takerAddress,
-      uint256 takerAmount,
-      address takerToken,
-      uint256 expiration,
-      uint256 nonce,
-      uint8 v,
-      bytes32 r,
-      bytes32 s
+  function swap(
+    address makerWallet,
+    uint256 makerParam,
+    address makerToken,
+    address takerWallet,
+    uint256 takerParam,
+    address takerToken,
+    uint256 expiry,
+    uint256 id,
+    uint8 v,
+    bytes32 r,
+    bytes32 s
   )
-    public payable
+    external payable
   {
 
-    // Check that the V1 signature is valid.
-    require(isValidLegacy(makerAddress, makerAmount, makerToken,
-      takerAddress, takerAmount, takerToken, expiration, nonce, v, r, s),
-      "INVALID_LEGACY_SIGNATURE");
+    require(expiry > block.timestamp,
+      "EXPIRED");
 
-    // Execute the order.
-    execute(
-      Order(expiration, nonce, address(0),
-        Party(makerAddress, makerToken, makerAmount),
-        Party(takerAddress, takerToken, takerAmount),
-        Party(address(0), address(0), 0)
-    ));
+    require(makerOrderStatus[makerWallet][id] == OPEN,
+      "UNAVAILABLE");
+
+    require(makerWallet == ecrecover(
+      keccak256(abi.encodePacked(
+        "\x19Ethereum Signed Message:\n32",
+        keccak256(abi.encodePacked(
+          byte(0),
+          this,
+          makerWallet,
+          makerParam,
+          makerToken,
+          takerWallet,
+          takerParam,
+          takerToken,
+          expiry,
+          id
+        )))),
+      v, r, s), "INVALID");
+
+    transferAny(makerToken, makerWallet, takerWallet, makerParam);
+    transferAny(takerToken, takerWallet, makerWallet, takerParam);
+
+    /*
+      require(IERC20(makerToken).transferFrom(makerWallet, takerWallet, makerParam));
+      require(IERC20(takerToken).transferFrom(takerWallet, makerWallet, takerParam));
+    */
+
+    emit Swap(
+      makerWallet, makerParam, makerToken,
+      takerWallet, takerParam, takerToken, id
+    );
 
   }
 
-  /**   @dev Mark an array of nonces as canceled (0x02).
-    *   @param nonces uint256[]
+  /**   @dev Mark an array of ids as canceled (0x02).
+    *   @param ids uint256[]
     */
-  function cancel(uint256[] memory nonces) public {
-    for (uint256 i = 0; i < nonces.length; i++) {
-      if (makerOrderStatus[msg.sender][nonces[i]] == UNFILLED) {
-        makerOrderStatus[msg.sender][nonces[i]] = CANCELED;
-        emit Cancel(msg.sender, nonces[i]);
+  function cancel(uint256[] memory ids) public {
+    for (uint256 i = 0; i < ids.length; i++) {
+      if (makerOrderStatus[msg.sender][ids[i]] == OPEN) {
+        makerOrderStatus[msg.sender][ids[i]] = CANCELED;
+        emit Cancel(msg.sender, ids[i]);
       }
     }
   }
@@ -129,12 +162,12 @@ contract Swap is Authorizable, Transferable, Verifiable {
     * @param order Order
     */
   function execute(Order memory order) internal {
-    // Ensure the order has not been filled.
-    require(makerOrderStatus[order.maker.wallet][order.nonce] != FILLED,
+    // Ensure the order has not been swaped.
+    require(makerOrderStatus[order.maker.wallet][order.id] != COMPLETED,
       "ORDER_ALREADY_FILLED");
 
     // Ensure the order has not been canceled.
-    require(makerOrderStatus[order.maker.wallet][order.nonce] != CANCELED,
+    require(makerOrderStatus[order.maker.wallet][order.id] != CANCELED,
       "ORDER_ALREADY_CANCELED");
 
     // Ensure the order has not expired.
@@ -147,8 +180,8 @@ contract Swap is Authorizable, Transferable, Verifiable {
         "SENDER_NOT_AUTHORIZED");
     }
 
-    // Mark the nonce as filled (0x01).
-    makerOrderStatus[order.maker.wallet][order.nonce] = FILLED;
+    // Mark the id as swaped (0x01).
+    makerOrderStatus[order.maker.wallet][order.id] = COMPLETED;
 
     // If the takerToken is null, expect that this is an order for ether.
     if (order.taker.token == address(0)) {
@@ -161,7 +194,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
       send(order.maker.wallet, msg.value);
 
       // Transfer the maker side of the trade to the taker.
-      transfer(
+      transferSafe(
         "MAKER",
         order.maker.wallet,
         order.taker.wallet,
@@ -189,7 +222,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
 
     // Transfer a specified fee to an affiliate.
     if (order.affiliate.wallet != address(0)) {
-      transfer(
+      transferSafe(
         "MAKER",
         order.maker.wallet,
         order.affiliate.wallet,
@@ -198,11 +231,11 @@ contract Swap is Authorizable, Transferable, Verifiable {
       );
     }
 
-    emit Fill(
+    emit Swap(
       order.maker.wallet, order.maker.param, order.maker.token,
       order.taker.wallet, order.taker.param, order.taker.token,
       order.affiliate.wallet, order.affiliate.param, order.affiliate.token,
-      order.nonce, order.expiry, order.signer
+      order.id, order.signer
     );
   }
 

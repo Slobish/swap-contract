@@ -17,12 +17,12 @@ contract Verifiable {
   }
 
   struct Order {
+    uint256 id;
     uint256 expiry;
-    uint256 nonce;
-    address signer;
     Party maker;
     Party taker;
     Party affiliate;
+    address signer;
   }
 
   struct Signature {
@@ -42,9 +42,8 @@ contract Verifiable {
 
   bytes32 internal constant ORDER_TYPEHASH = keccak256(abi.encodePacked(
       "Order(",
+      "uint256 id,",
       "uint256 expiry,",
-      "uint256 nonce,",
-      "address signer,",
       "Party maker,",
       "Party taker,",
       "Party affiliate",
@@ -88,9 +87,8 @@ contract Verifiable {
         domainSeparator,
         keccak256(abi.encode(
             ORDER_TYPEHASH,
+            order.id,
             order.expiry,
-            order.nonce,
-            order.signer,
             hashParty(order.maker),
             hashParty(order.taker),
             hashParty(order.affiliate)
@@ -114,35 +112,4 @@ contract Verifiable {
     return false;
   }
 
-  function isValidLegacy(
-    address makerAddress,
-    uint makerAmount,
-    address makerToken,
-    address takerAddress,
-    uint takerAmount,
-    address takerToken,
-    uint256 expiration,
-    uint256 nonce,
-    uint8 v,
-    bytes32 r,
-    bytes32 s
-  ) public view returns (bool) {
-
-    return makerAddress == ecrecover(
-      keccak256(abi.encodePacked(
-        "\x19Ethereum Signed Message:\n32",
-        keccak256(abi.encodePacked(
-          byte(0),
-          this,
-          makerAddress,
-          makerAmount,
-          makerToken,
-          takerAddress,
-          takerAmount,
-          takerToken,
-          expiration,
-          nonce
-        )))),
-      v, r, s);
-  }
 }
