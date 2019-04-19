@@ -108,10 +108,7 @@ contract('Swap', ([
     })
 
     it('Checks that Bob can swap with Alice (200 AST for 50 DAI)', async () => {
-      const tx = await swap(_order, _signature, { from: bobAddress })
-      console.log('GAS USED', tx.receipt.gasUsed)
-
-      emitted(tx, 'Swap')
+      emitted(await swap(_order, _signature, { from: bobAddress }), 'Swap')
     })
 
     it('Checks balances...', async () => {
@@ -431,11 +428,7 @@ contract('Swap', ([
           param: 50,
         },
       })
-
-      const tx = await swap(order, signature, { from: bobAddress })
-      console.log('GAS USED', tx.receipt.gasUsed)
-
-      emitted(tx, 'Swap')
+      emitted(await swap(order, signature, { from: bobAddress }), 'Swap')
     })
 
     it('Checks balances...', async () => {
@@ -462,7 +455,7 @@ contract('Swap', ([
 
       const signature = await signatures.getLegacySignature(order, aliceAddress, swapAddress)
 
-      const tx = await swapSimple(
+      emitted(await swapSimple(
         order.maker.wallet,
         order.maker.param,
         order.maker.token,
@@ -475,11 +468,7 @@ contract('Swap', ([
         signature.r,
         signature.s,
         { from: bobAddress },
-      )
-
-      console.log('GAS USED', tx.receipt.gasUsed)
-
-      emitted(tx, 'Swap')
+      ), 'Swap')
     })
 
     it('Checks that an invalid V1 signature will fail', async () => {
@@ -556,11 +545,7 @@ contract('Swap', ([
           param: 100,
         },
       })
-
-      const tx = await swap(order, signature, { from: bobAddress })
-      console.log('GAS USED', tx.receipt.gasUsed)
-
-      emitted(tx, 'Swap')
+      emitted(await swap(order, signature, { from: bobAddress }), 'Swap')
     })
 
     it('Bob approves Swap to transfer his kitty collectible', async () => {
@@ -605,11 +590,7 @@ contract('Swap', ([
           param: 54321,
         },
       })
-
-      const tx = await swap(order, signature, { from: bobAddress })
-      console.log('GAS USED', tx.receipt.gasUsed)
-
-      emitted(tx, 'Swap')
+      emitted(await swap(order, signature, { from: bobAddress }), 'Swap')
     })
 
     it('Checks balances...', async () => {
