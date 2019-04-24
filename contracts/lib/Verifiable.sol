@@ -72,7 +72,7 @@ contract Verifiable {
     ));
   }
 
-  function hashParty(Party memory party) public pure returns (bytes32) {
+  function hashParty(Party memory party) internal pure returns (bytes32) {
     return keccak256(abi.encode(
         PARTY_TYPEHASH,
         party.wallet,
@@ -81,7 +81,7 @@ contract Verifiable {
     ));
   }
 
-  function hashOrder(Order memory order) public view returns (bytes32) {
+  function hashOrder(Order memory order) internal view returns (bytes32) {
     return keccak256(abi.encodePacked(
         EIP191_HEADER,
         domainSeparator,
@@ -96,7 +96,7 @@ contract Verifiable {
     ));
   }
 
-  function isValid(Order memory order, address signer, Signature memory signature) public view returns (bool) {
+  function isValid(Order memory order, Signature memory signature, address signer) internal view returns (bool) {
     if (signature.version == byte(0x01)) {
       return signer == ecrecover(
           hashOrder(order),
@@ -110,6 +110,29 @@ contract Verifiable {
       );
     }
     return false;
+  }
+
+  function isValidLegacy(
+    address makerWallet, uint256 makerParam, address makerToken,
+    address takerWallet, uint256 takerParam, address takerToken,
+    uint256 expiry, uint256 id, uint8 v, bytes32 r, bytes32 s
+    ) internal view returns (bool) {
+      return makerWallet == ecrecover(
+        keccak256(abi.encodePacked(
+          "\x19Ethereum Signed Message:\n32",
+          keccak256(abi.encodePacked(
+            byte(0),
+            this,
+            makerWallet,
+            makerParam,
+            makerToken,
+            takerWallet,
+            takerParam,
+            takerToken,
+            expiry,
+            id
+          )))),
+        v, r, s);
   }
 
 }

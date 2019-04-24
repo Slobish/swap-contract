@@ -44,8 +44,9 @@ contract('Swap', ([
       swapContract = await Swap.deployed()
       swapAddress = swapContract.address
 
-      swap = swapContract.methods['swap((uint256,uint256,(address,address,uint256),(address,address,uint256),(address,address,uint256),address),(uint8,bytes32,bytes32,bytes1))']
+      swap = swapContract.methods['swap((uint256,uint256,(address,address,uint256),(address,address,uint256),(address,address,uint256),address),(uint8,bytes32,bytes32,bytes1),address)']
       swapSimple = swapContract.methods['swap(address,uint256,address,address,uint256,address,uint256,uint256,uint8,bytes32,bytes32)']
+      swapPurchase = swapContract.methods['purchase(address,uint256,address,uint256,uint256,uint256,uint8,bytes32,bytes32)']
 
       orders.setVerifyingContract(swapAddress)
     })
@@ -438,8 +439,8 @@ contract('Swap', ([
     })
   })
 
-  describe('Swaps (Simple)', () => {
-    it('Checks that a V1 signature succeeds', async () => {
+  describe('Swaps (V1)', () => {
+    it('Checks that a V1 swap succeeds', async () => {
       const { order } = await orders.getOrder({
         maker: {
           wallet: aliceAddress,
@@ -504,6 +505,37 @@ contract('Swap', ([
     })
   })
 
+  describe('Purchases', () => {
+    it('Checks that a purchase succeeds', async () => {
+      const { order } = await orders.getOrder({
+        maker: {
+          wallet: aliceAddress,
+          token: tokenAST.address,
+          param: 100,
+        },
+        taker: {
+          wallet: bobAddress,
+          token: '0x0000000000000000000000000000000000000000',
+          param: 20,
+        },
+      })
+
+      const signature = await signatures.getLegacySignature(order, aliceAddress, swapAddress)
+
+      emitted(await purchase(
+        order.maker.wallet,
+        order.maker.param,
+        order.maker.token,
+        order.taker.param,
+        order.expiry,
+        order.id,
+        signature.v,
+        signature.r,
+        signature.s,
+        { from: bobAddress, value: order.taker.param },
+      ), 'Swap')
+    })
+  })
 
   describe('Deploying...', () => {
     it('Deployed test contract "ConcertTicket"', async () => {

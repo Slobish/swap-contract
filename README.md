@@ -27,6 +27,9 @@ Authorize peers to act on behalf of others.
 ### Affiliate Fees
 Compensate those who connect peers.
 
+### Batch Cancels
+Cancel multiple orders in a single transaction.
+
 ## Tools
 
 Contracts written in [solidity 0.5.7](https://solidity.readthedocs.io/en/v0.5.7/) and tests written in [Mocha / Chai](https://truffleframework.com/docs/truffle/testing/writing-tests-in-javascript) with JavaScript.

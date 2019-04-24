@@ -20,6 +20,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
 
   // Event emitted on swap.
   event Swap(
+    uint256 indexed id,
     address indexed makerAddress,
     uint256 makerParam,
     address makerToken,
@@ -28,55 +29,79 @@ contract Swap is Authorizable, Transferable, Verifiable {
     address takerToken,
     address affiliateAddress,
     uint256 affiliateParam,
-    address affiliateToken,
-    uint256 indexed id,
-    address signer
-  );
-
-  // Event emitted on simple swap.
-  event Swap(
-    address indexed makerAddress,
-    uint256 makerParam,
-    address makerToken,
-    address takerAddress,
-    uint256 takerParam,
-    address takerToken,
-    uint256 indexed id
+    address affiliateToken
   );
 
   // Event emitted on order cancel.
   event Cancel(
-    address indexed makerAddress,
-    uint256 id
+    uint256 indexed id,
+    address indexed makerAddress
   );
 
   /**
-    * @dev Swap Protocol V2
+    * @notice Execute an atomic token purchase for ETH
+    * @dev Determines type (ERC-20 or ERC-721) using ERC-165
     *
-    * @param order Order
-    * @param signature Signature
+    * @param sellerWallet address
+    * @param sellerParam uint256
+    * @param sellerToken address
+    * @param totalPrice uint256
+    * @param expiry uint256
+    * @param id uint256
+    * @param v uint8
+    * @param r bytes32
+    * @param s bytes32
+    *
     */
-  function swap(Order calldata order, Signature calldata signature) external payable {
+  function purchase(
+    address sellerWallet,
+    uint256 sellerParam,
+    address sellerToken,
+    uint256 totalPrice,
+    uint256 expiry,
+    uint256 id,
+    uint8 v,
+    bytes32 r,
+    bytes32 s
+  )
+    external payable
+  {
 
-    // Check that the V2 signature is valid.
-    if (order.signer != address(0)) {
-      require(isAuthorized(order.maker.wallet, order.signer),
-        "SIGNER_NOT_AUTHORIZED");
+    require(expiry > block.timestamp,
+      "ORDER_EXPIRED");
 
-      require(isValid(order, order.signer, signature),
-        "INVALID_DELEGATE_SIGNATURE");
-    } else {
-      require(isValid(order, order.maker.wallet, signature),
-        "INVALID_MAKER_SIGNATURE");
-    }
+    require(makerOrderStatus[sellerWallet][id] == OPEN,
+      "ORDER_UNAVAILABLE");
 
-    // Execute the order.
-    execute(order);
+    require(msg.value == totalPrice,
+      "AMOUNT_INCORRECT");
+
+    require(isValidLegacy(
+      sellerWallet,
+      sellerParam,
+      sellerToken,
+      msg.sender,
+      totalPrice,
+      address(0),
+      expiry,
+      id, v, r, s
+    ), "SIGNATURE_INVALID");
+
+    makerOrderStatus[sellerWallet][id] = COMPLETED;
+
+    send(sellerWallet, totalPrice);
+    transferAny(sellerToken, sellerWallet, msg.sender, sellerParam);
+
+    emit Swap(id, sellerWallet, sellerParam, sellerToken,
+      msg.sender, totalPrice, address(0),
+      address(0), 0, address(0)
+    );
 
   }
 
   /**
-    * @dev Swap Protocol V1
+    * @notice Execute an atomic token swap (V1)
+    * @dev Determines type (ERC-20 or ERC-721) using ERC-165
     *
     * @param makerWallet address
     * @param makerParam uint256
@@ -104,65 +129,60 @@ contract Swap is Authorizable, Transferable, Verifiable {
     bytes32 r,
     bytes32 s
   )
-    external payable
+    external
   {
 
     require(expiry > block.timestamp,
-      "EXPIRED");
+      "ORDER_EXPIRED");
 
     require(makerOrderStatus[makerWallet][id] == OPEN,
-      "UNAVAILABLE");
+      "ORDER_UNAVAILABLE");
 
-    require(makerWallet == ecrecover(
-      keccak256(abi.encodePacked(
-        "\x19Ethereum Signed Message:\n32",
-        keccak256(abi.encodePacked(
-          byte(0),
-          this,
-          makerWallet,
-          makerParam,
-          makerToken,
-          takerWallet,
-          takerParam,
-          takerToken,
-          expiry,
-          id
-        )))),
-      v, r, s), "INVALID");
+    require(isValidLegacy(
+      makerWallet,
+      makerParam,
+      makerToken,
+      takerWallet,
+      takerParam,
+      takerToken,
+      expiry,
+      id, v, r, s
+    ), "SIGNATURE_INVALID");
+
+    makerOrderStatus[makerWallet][id] = COMPLETED;
 
     transferAny(makerToken, makerWallet, takerWallet, makerParam);
     transferAny(takerToken, takerWallet, makerWallet, takerParam);
 
-    /*
-      require(IERC20(makerToken).transferFrom(makerWallet, takerWallet, makerParam));
-      require(IERC20(takerToken).transferFrom(takerWallet, makerWallet, takerParam));
-    */
-
-    emit Swap(
-      makerWallet, makerParam, makerToken,
-      takerWallet, takerParam, takerToken, id
+    emit Swap(id, makerWallet, makerParam, makerToken,
+      takerWallet, takerParam, takerToken,
+      address(0), 0, address(0)
     );
 
   }
 
-  /**   @dev Mark an array of ids as canceled (0x02).
-    *   @param ids uint256[]
-    */
-  function cancel(uint256[] memory ids) public {
-    for (uint256 i = 0; i < ids.length; i++) {
-      if (makerOrderStatus[msg.sender][ids[i]] == OPEN) {
-        makerOrderStatus[msg.sender][ids[i]] = CANCELED;
-        emit Cancel(msg.sender, ids[i]);
-      }
-    }
-  }
-
   /**
-    * @dev Execute and settle an order.
+    * @notice Execute an atomic token swap (V2)
+    * @dev Determines type (ERC-20 or ERC-721) using ERC-165
+    *
     * @param order Order
+    * @param signature Signature
     */
-  function execute(Order memory order) internal {
-    // Ensure the order has not been swaped.
+  function swap(Order calldata order, Signature calldata signature, address signer) external payable {
+
+    // Check that the V2 signature is valid.
+    if (signer != address(0)) {
+      require(isAuthorized(order.maker.wallet, signer),
+        "SIGNER_UNAUTHORIZED");
+
+      require(isValid(order, signature, signer),
+        "DELEGATE_SIGNATURE_INVALID");
+    } else {
+      require(isValid(order, signature, order.maker.wallet),
+        "MAKER_SIGNATURE_INVALID");
+    }
+
+    // Ensure the order has not been swapped.
     require(makerOrderStatus[order.maker.wallet][order.id] != COMPLETED,
       "ORDER_ALREADY_FILLED");
 
@@ -177,7 +197,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
     // Check that a specified sender is the actual sender.
     if (msg.sender != order.taker.wallet) {
       require(isAuthorized(order.taker.wallet, msg.sender),
-        "SENDER_NOT_AUTHORIZED");
+        "SENDER_UNAUTHORIZED");
     }
 
     // Mark the id as swaped (0x01).
@@ -231,12 +251,23 @@ contract Swap is Authorizable, Transferable, Verifiable {
       );
     }
 
-    emit Swap(
-      order.maker.wallet, order.maker.param, order.maker.token,
+    emit Swap(order.id, order.maker.wallet, order.maker.param, order.maker.token,
       order.taker.wallet, order.taker.param, order.taker.token,
-      order.affiliate.wallet, order.affiliate.param, order.affiliate.token,
-      order.id, order.signer
+      order.affiliate.wallet, order.affiliate.param, order.affiliate.token
     );
+  }
+
+  /**   @notice Cancel a batch of orders.
+    *   @dev Canceled orders are marked with byte 0x02.
+    *   @param ids uint256[]
+    */
+  function cancel(uint256[] memory ids) public {
+    for (uint256 i = 0; i < ids.length; i++) {
+      if (makerOrderStatus[msg.sender][ids[i]] == OPEN) {
+        makerOrderStatus[msg.sender][ids[i]] = CANCELED;
+        emit Cancel(ids[i], msg.sender);
+      }
+    }
   }
 
 }
