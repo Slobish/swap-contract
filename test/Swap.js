@@ -36,6 +36,7 @@ contract('Swap', ([
 
   let swap
   let swapSimple
+  let swapPurchase
 
   orders.setKnownAccounts([aliceAddress, bobAddress, carolAddress, davidAddress])
 
@@ -109,7 +110,7 @@ contract('Swap', ([
     })
 
     it('Checks that Bob can swap with Alice (200 AST for 50 DAI)', async () => {
-      emitted(await swap(_order, _signature, { from: bobAddress }), 'Swap')
+      emitted(await swap(_order, _signature, aliceAddress, { from: bobAddress }), 'Swap')
     })
 
     it('Checks balances...', async () => {
@@ -118,7 +119,7 @@ contract('Swap', ([
     })
 
     it('Checks that Bob cannot take the same order again (200 AST for 50 DAI)', async () => {
-      await reverted(swap(_order, _signature, { from: bobAddress }), 'ORDER_ALREADY_FILLED')
+      await reverted(swap(_order, _signature, aliceAddress, { from: bobAddress }), 'ORDER_ALREADY_FILLED')
     })
 
     it('Checks that Alice cannot trade more than approved (200 AST)', async () => {
@@ -132,7 +133,7 @@ contract('Swap', ([
           wallet: bobAddress,
         },
       })
-      await reverted(swap(order, signature, { from: bobAddress }), 'INSUFFICIENT_ALLOWANCE')
+      await reverted(swap(order, signature, aliceAddress, { from: bobAddress }), 'INSUFFICIENT_ALLOWANCE')
     })
 
     it('Checks that Bob cannot take an expired order', async () => {
@@ -145,7 +146,7 @@ contract('Swap', ([
         },
         expiry: 0,
       })
-      await reverted(swap(order, signature, { from: bobAddress }), 'ORDER_EXPIRED')
+      await reverted(swap(order, signature, aliceAddress, { from: bobAddress }), 'ORDER_EXPIRED')
     })
 
     it('Checks that sending ether with a token trade will revert', async () => {
@@ -158,7 +159,7 @@ contract('Swap', ([
           token: tokenAST.address,
         },
       })
-      await reverted(swap(order, signature, { from: bobAddress, value: 1 }), 'VALUE_MUST_BE_ZERO')
+      await reverted(swap(order, signature, aliceAddress, { from: bobAddress, value: 1 }), 'VALUE_MUST_BE_ZERO')
     })
 
     it('Checks that Bob can not trade more than he holds', async () => {
@@ -172,7 +173,7 @@ contract('Swap', ([
           wallet: aliceAddress,
         },
       })
-      await reverted(swap(order, signature, { from: aliceAddress }), 'INSUFFICIENT_BALANCE')
+      await reverted(swap(order, signature, bobAddress, { from: aliceAddress }), 'INSUFFICIENT_BALANCE')
     })
 
     it('Checks existing balances (Alice 800 AST and 50 DAI, Bob 200 AST and 950 DAI)', async () => {
@@ -204,7 +205,7 @@ contract('Swap', ([
     })
 
     it('Checks that David cannot make an order on behalf of Alice', async () => {
-      await reverted(swap(_order, _signature, { from: bobAddress }), 'SIGNER_NOT_AUTHORIZED')
+      await reverted(swap(_order, _signature, davidAddress, { from: bobAddress }), 'SIGNER_UNAUTHORIZED')
     })
 
     it('Alice attempts to authorize David to make orders on her behalf with an invalid expiry', async () => {
@@ -221,7 +222,7 @@ contract('Swap', ([
     })
 
     it('Checks that David can make an order on behalf of Alice', async () => {
-      emitted(await swap(_order, _signature, { from: bobAddress }), 'Swap')
+      emitted(await swap(_order, _signature, davidAddress, { from: bobAddress }), 'Swap')
     })
 
     it('Alice revokes authorization from David', async () => {
@@ -238,7 +239,7 @@ contract('Swap', ([
           wallet: bobAddress,
         },
       })
-      await reverted(swap(order, signature, { from: bobAddress }), 'SIGNER_NOT_AUTHORIZED')
+      await reverted(swap(order, signature, davidAddress, { from: bobAddress }), 'SIGNER_UNAUTHORIZED')
     })
   })
 
@@ -263,8 +264,8 @@ contract('Swap', ([
       _signature = signature
     })
 
-    it('Checks that Carol can not take an order on behalf of Bob', async () => {
-      await reverted(swap(_order, _signature, { from: carolAddress }), 'SENDER_NOT_AUTHORIZED')
+    it('Checks that Carol cannot take an order on behalf of Bob', async () => {
+      await reverted(swap(_order, _signature, aliceAddress, { from: carolAddress }), 'SENDER_UNAUTHORIZED')
     })
 
     it('Bob authorizes Carol to take orders on his behalf', async () => {
@@ -272,7 +273,7 @@ contract('Swap', ([
     })
 
     it('Checks that Carol can take an order on behalf of Bob', async () => {
-      emitted(await swap(_order, _signature, { from: carolAddress }), 'Swap')
+      emitted(await swap(_order, _signature, aliceAddress, { from: carolAddress }), 'Swap')
     })
 
     it('Bob revokes sender authorization from Carol', async () => {
@@ -288,7 +289,7 @@ contract('Swap', ([
           wallet: bobAddress,
         },
       })
-      await reverted(swap(order, signature, { from: carolAddress }), 'SENDER_NOT_AUTHORIZED')
+      await reverted(swap(order, signature, aliceAddress, { from: carolAddress }), 'SENDER_UNAUTHORIZED')
     })
   })
 
@@ -315,7 +316,7 @@ contract('Swap', ([
           param: 10,
         },
       })
-      emitted(await swap(order, signature, { from: carolAddress }), 'Swap')
+      emitted(await swap(order, signature, davidAddress, { from: carolAddress }), 'Swap')
     })
   })
 
@@ -343,7 +344,7 @@ contract('Swap', ([
     })
 
     it('Checks that Bob is unable to take an order with id "12345"', async () => {
-      await reverted(swap(_order, _signature, { from: bobAddress }), 'ORDER_ALREADY_CANCELED')
+      await reverted(swap(_order, _signature, aliceAddress, { from: bobAddress }), 'ORDER_ALREADY_CANCELED')
     })
 
     it('Checks existing balances (Alice 800 AST and 50 DAI, Bob 200 AST and 950 DAI)', async () => {
@@ -369,7 +370,7 @@ contract('Swap', ([
           param: value,
         },
       })
-      await reverted(swap(order, signature, { from: bobAddress }), 'VALUE_MUST_BE_SENT')
+      await reverted(swap(order, signature, aliceAddress, { from: bobAddress }), 'VALUE_MUST_BE_SENT')
     })
 
     it('Checks that Bob can swap raw ETH with Alice (200 AST for 1 ETH)', async () => {
@@ -384,7 +385,7 @@ contract('Swap', ([
           param: value,
         },
       })
-      emitted(await swap(order, signature, { from: bobAddress, value }), 'Swap')
+      emitted(await swap(order, signature, aliceAddress, { from: bobAddress, value }), 'Swap')
     })
 
     it('Ensures that Swap has not kept any of the ether', async () => {
@@ -401,7 +402,7 @@ contract('Swap', ([
           token: tokenAST.address,
         },
       })
-      await reverted(swap(order, signature, { from: bobAddress, value }), 'VALUE_MUST_BE_ZERO')
+      await reverted(swap(order, signature, aliceAddress, { from: bobAddress, value }), 'VALUE_MUST_BE_ZERO')
     })
 
     it('Checks balances...', async () => {
@@ -429,7 +430,7 @@ contract('Swap', ([
           param: 50,
         },
       })
-      emitted(await swap(order, signature, { from: bobAddress }), 'Swap')
+      emitted(await swap(order, signature, aliceAddress, { from: bobAddress }), 'Swap')
     })
 
     it('Checks balances...', async () => {
@@ -522,7 +523,7 @@ contract('Swap', ([
 
       const signature = await signatures.getLegacySignature(order, aliceAddress, swapAddress)
 
-      emitted(await purchase(
+      emitted(await swapPurchase(
         order.maker.wallet,
         order.maker.param,
         order.maker.token,
@@ -577,19 +578,19 @@ contract('Swap', ([
           param: 100,
         },
       })
-      emitted(await swap(order, signature, { from: bobAddress }), 'Swap')
+      emitted(await swap(order, signature, aliceAddress, { from: bobAddress }), 'Swap')
     })
 
     it('Bob approves Swap to transfer his kitty collectible', async () => {
       emitted(await tokenKitty.approve(swapAddress, 54321, { from: bobAddress }), 'Approval')
     })
 
-    it('Alice buys Kitty #54321 from Bob for 100 AST', async () => {
+    it('Alice buys Kitty #54321 from Bob for 50 AST', async () => {
       const { order, signature } = await orders.getOrder({
         maker: {
           wallet: aliceAddress,
           token: tokenAST.address,
-          param: 100,
+          param: 50,
         },
         taker: {
           wallet: bobAddress,
@@ -597,7 +598,7 @@ contract('Swap', ([
           param: 54321,
         },
       })
-      emitted(await swap(order, signature, { from: bobAddress }), 'Swap')
+      emitted(await swap(order, signature, aliceAddress, { from: bobAddress }), 'Swap')
     })
 
     it('Alice approves Swap to transfer her kitty collectible', async () => {
@@ -609,7 +610,7 @@ contract('Swap', ([
         maker: {
           wallet: aliceAddress,
           token: tokenAST.address,
-          param: 100,
+          param: 50,
         },
         taker: {
           wallet: bobAddress,
@@ -622,7 +623,7 @@ contract('Swap', ([
           param: 54321,
         },
       })
-      emitted(await swap(order, signature, { from: bobAddress }), 'Swap')
+      emitted(await swap(order, signature, aliceAddress, { from: bobAddress }), 'Swap')
     })
 
     it('Checks balances...', async () => {
@@ -646,7 +647,7 @@ contract('Swap', ([
         },
       })
       const signature = signatures.getPrivateKeySignature(order, evePrivKey, swapAddress)
-      await reverted(swap(order, signature, { from: bobAddress }), 'INVALID_MAKER_SIGNATURE')
+      await reverted(swap(order, signature, aliceAddress, { from: bobAddress }), 'SIGNATURE_INVALID')
     })
 
     it('Alice authorizes Eve to make orders on her behalf', async () => {
@@ -672,7 +673,7 @@ contract('Swap', ([
         },
       })
       const signatureTwo = signatures.getPrivateKeySignature(orderTwo, evePrivKey, swapAddress)
-      await reverted(swap(orderOne, signatureTwo, { from: bobAddress }), 'INVALID_DELEGATE_SIGNATURE')
+      await reverted(swap(orderOne, signatureTwo, eveAddress, { from: bobAddress }), 'SIGNATURE_INVALID')
     })
     it('Checks that an invalid signature version will revert', async () => {
       const { order } = await orders.getOrder({
@@ -685,7 +686,7 @@ contract('Swap', ([
       })
       const signature = signatures.getPrivateKeySignature(order, evePrivKey, swapAddress)
       signature.version = Buffer.from('00', 'hex')
-      await reverted(swap(order, signature, { from: bobAddress }), 'INVALID_MAKER_SIGNATURE')
+      await reverted(swap(order, signature, aliceAddress, { from: bobAddress }), 'SIGNATURE_INVALID')
     })
     it('Checks that a private key signature is valid', async () => {
       const { order } = await orders.getOrder({
@@ -701,7 +702,7 @@ contract('Swap', ([
         },
       })
       const signature = signatures.getPrivateKeySignature(order, evePrivKey, swapAddress)
-      emitted(await swap(order, signature, { from: aliceAddress }), 'Swap')
+      emitted(await swap(order, signature, eveAddress, { from: aliceAddress }), 'Swap')
     })
     it('Checks that a typed data (EIP712) signature is valid', async () => {
       const { order } = await orders.getOrder({
@@ -717,7 +718,7 @@ contract('Swap', ([
         },
       })
       const signature = signatures.getTypedDataSignature(order, evePrivKey, swapAddress)
-      emitted(await swap(order, signature, { from: aliceAddress }), 'Swap')
+      emitted(await swap(order, signature, eveAddress, { from: aliceAddress }), 'Swap')
     })
   })
 })

@@ -170,17 +170,11 @@ contract Swap is Authorizable, Transferable, Verifiable {
     */
   function swap(Order calldata order, Signature calldata signature, address signer) external payable {
 
-    // Check that the V2 signature is valid.
-    if (signer != address(0)) {
-      require(isAuthorized(order.maker.wallet, signer),
-        "SIGNER_UNAUTHORIZED");
+    require(isAuthorized(order.maker.wallet, signer),
+      "SIGNER_UNAUTHORIZED");
 
-      require(isValid(order, signature, signer),
-        "DELEGATE_SIGNATURE_INVALID");
-    } else {
-      require(isValid(order, signature, order.maker.wallet),
-        "MAKER_SIGNATURE_INVALID");
-    }
+    require(isValid(order, signature, signer),
+      "SIGNATURE_INVALID");
 
     // Ensure the order has not been swapped.
     require(makerOrderStatus[order.maker.wallet][order.id] != COMPLETED,

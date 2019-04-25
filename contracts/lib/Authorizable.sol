@@ -30,6 +30,7 @@ contract Authorizable {
   }
 
   function isAuthorized(address approver, address delegate) internal view returns (bool) {
+    if (approver == delegate) return true;
     return (approvals[approver][delegate] > block.timestamp);
   }
 }

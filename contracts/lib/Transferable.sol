@@ -67,10 +67,10 @@ contract Transferable {
     if (token._supportsInterface(INTERFACE_ERC721)) {
       IERC721(token).safeTransferFrom(from, to, param);
     } else {
-      require(IERC20(token).allowance(from, address(this)) >= param,
-        string(abi.encodePacked(side, "_INSUFFICIENT_ALLOWANCE")));
       require(IERC20(token).balanceOf(from) >= param,
         string(abi.encodePacked(side, "_INSUFFICIENT_BALANCE")));
+      require(IERC20(token).allowance(from, address(this)) >= param,
+        string(abi.encodePacked(side, "_INSUFFICIENT_ALLOWANCE")));
       require(IERC20(token).transferFrom(from, to, param));
     }
   }
