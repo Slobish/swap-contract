@@ -64,7 +64,7 @@ Cancel multiple orders in a single transaction.
 | Maker | A party that sets and signs the parameters and price of an Order. |
 | Taker | A party that accepts the parameters of an Order and settles it on Ethereum. |
 | Affiliate | An *optional* party compensated by the Maker for facilitating a Swap. |
-| Delegate | An *optional* party authorized to make or take orders on behalf of another party. |
+| Delegate | An *optional* party authorized to make or take Orders on behalf of another party. |
 | Order | A specification of the tokens, amounts, and parties to a Swap. |
 | ID | A parameter of every Order that is unique to its Maker. |
 
@@ -82,8 +82,8 @@ function swap(
 
 | Name | Type | Optionality | Description |
 | :--- | :--- | :--- | :--- |
-| `order` | `Order` | Required | A unique identifier for the order. |
-| `signature` | `Signature` | Required | The expiry in seconds since unix epoch. |
+| `order` | `Order` | Required | Order struct as specified below. |
+| `signature` | `Signature` | Required | Signature struct as specified below. |
 
 ### Order
 ```Solidity
@@ -98,11 +98,11 @@ struct Order {
 
 | Property | Type | Optionality | Description |
 | :--- | :--- | :--- | :--- |
-| `id` | `uint256` | Required | A unique identifier for the order. |
+| `id` | `uint256` | Required | A unique identifier for the Order. |
 | `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
-| `maker` | `Party` | Required | The maker of the order who sets price. |
-| `taker` | `Party` | Required | The taker of the order who accepts price. |
-| `affiliate` | `Party` | Optional | An affiliate to be paid by the maker. |
+| `maker` | `Party` | Required | The Maker of the Order who sets price. |
+| `taker` | `Party` | Required | The Taker of the Order who accepts price. |
+| `affiliate` | `Party` | Optional | An affiliate to be paid by the Maker. |
 
 ### Party
 ```Solidity
@@ -116,7 +116,7 @@ struct Party {
 | Property | Type | Optionality | Description |
 | :--- | :--- | :--- | :--- |
 | `wallet` | `address` | Required | The wallet address of a party. |
-| `token` | `address` | Required | The address of the token the party will send or receive. |
+| `token` | `address` | Required | The address of the token the party sends or receives. |
 | `param` | `uint256` | Required | Either an amount of ERC-20 or identifier of an ERC-721. |
 
 
@@ -124,34 +124,38 @@ struct Party {
 
 ```Solidity
 struct Signature {
-  uint8 v;
+  address signer;
   bytes32 r;
   bytes32 s;
+  uint8 v;
   bytes1 version;
 }
 ```
 
 | Property | Type | Optionality | Description |
 | :--- | :--- | :--- | :--- |
-| `v` | `address` | Required | The wallet address of a party. |
-| `r` | `address` | Required | The address of the token the party will send or receive. |
-| `s` | `uint256` | Required | Either an amount of ERC-20 or identifier of an ERC-721. |
-| `version` | `uint256` | Required | Either an amount of ERC-20 or identifier of an ERC-721. |
+| `signer` | `address` | Required | The address of the account used to produce a signature. |
+| `r` | `bytes32` | Required | The `r` value of an ECDSA signature. |
+| `s` | `bytes32` | Required | The `s` value of an ECDSA signature. |
+| `v` | `uint8` | Required | The `v` value of an ECDSA signature. |
+| `version` | `bytes1` | Required | Indicates that either `personal_sign` or `signTypedData` was used. |
 
 ### Reverts
 
 | Reason | Scenario |
 | :--- | :--- |
 | `SIGNER_UNAUTHORIZED` | Order has been signed by an account that has not been authorized to sign it. |
-| `SIGNATURE_INVALID` | Signature provided does not match the Order and signer provided. |
+| `SIGNATURE_INVALID` | Signature provided does not match the Order provided. |
 | `ORDER_ALREADY_TAKEN` | Order has already been taken by its `id` value. |
 | `ORDER_ALREADY_CANCELED` | Order has already been canceled by its `id` value. |
 | `ORDER_EXPIRED` | Order has an `expiry` lower than the current block time. |
 | `SENDER_UNAUTHORIZED` | Order has been sent by an account that has not been authorized to send it. |
 | `VALUE_MUST_BE_SENT` | Order indicates an ether (ETH) Swap, but insufficient ether was sent. |
 | `VALUE_MUST_BE_ZERO` | Order indicates a token Swap, but ether (ETH) was sent along with the transaction. |
-| `INSUFFICIENT_ALLOWANCE` | Transfer was attempted but the sender has not approved the Swap contract to move the balance. |
-| `INSUFFICIENT_BALANCE` | Transfer was attempted but the sender has an insufficient balance. |
+| `MAKER_INSUFFICIENT_ALLOWANCE` | Transfer was attempted but the Maker has not approved the Swap Contract to transfer the balance. |
+| `MAKER_INSUFFICIENT_BALANCE` | Transfer was attempted but the Maker has an insufficient balance. |
+| `TAKER_INSUFFICIENT_ALLOWANCE` | Transfer was attempted but the Taker has not approved the Swap Contract to transfer the balance. |
+| `TAKER_INSUFFICIENT_BALANCE` | Transfer was attempted but the Taker has an insufficient balance. |
 | `INVALID_AUTH_DELEGATE` | Delegate address is the same as the transaction sender address. |
 | `INVALID_AUTH_EXPIRY` | Delegate authorization was attempted but the expiry time has already passed. |
 
@@ -178,24 +182,24 @@ function swap(
 
 | Name | Type | Optionality | Description |
 | :--- | :--- | :--- | :--- |
-| `id` | `uint256` | Required | A unique identifier for the order. |
+| `id` | `uint256` | Required | A unique identifier for the Order. |
 | `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
-| `makerWallet` | `address` | Required | A unique identifier for the order. |
-| `makerParam` | `uint256` | Required | The expiry in seconds since unix epoch. |
-| `makerToken` | `address` | Required | A unique identifier for the order. |
-| `totalCost` | `uint256` | Required | A unique identifier for the order. |
+| `makerWallet` | `Party` | Required | The Maker of the Order who sets price. |
+| `makerParam` | `uint256` | Required | The amount or identifier of the token the Maker sends. |
+| `makerToken` | `address` | Required | The address of the token the Maker sends. |
+| `takerParam` | `uint256` | Required | The amount or identifier of the token the Taker sends. |
 | `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
-| `r` | `bytes32` | Required | A unique identifier for the order. |
-| `s` | `bytes32` | Required | A unique identifier for the order. |
-| `v` | `uint8` | Required | The expiry in seconds since unix epoch. |
+| `r` | `bytes32` | Required | The `r` value of an ECDSA signature. |
+| `s` | `bytes32` | Required | The `s` value of an ECDSA signature. |
+| `v` | `uint8` | Required | The `v` value of an ECDSA signature. |
 
 ### Reverts
 
 | Reason | Scenario |
 | :--- | :--- |
 | `ORDER_EXPIRED` | Order has an `expiry` lower than the current block time. |
-| `ORDER_UNAVAILABLE` | Order has already been taken by its `id` value. |
-| `SIGNATURE_INVALID` | Order has been signed by the maker but the signature is incorrect. |
+| `ORDER_UNAVAILABLE` | Order has already been taken or canceled. |
+| `SIGNATURE_INVALID` | Signature provided does not match the Order provided. |
 
 ## Purchase
 Lightweight purchase of a token for ether using simple signatures.
@@ -209,7 +213,7 @@ function purchase(
   address makerWallet,
   uint256 makerParam,
   address makerToken,
-  uint256 totalCost,
+  uint256 takerParam,
   uint256 expiry,
   bytes32 r,
   bytes32 s,
@@ -221,37 +225,37 @@ function purchase(
 
 | Name | Type | Optionality | Description |
 | :--- | :--- | :--- | :--- |
-| `id` | `uint256` | Required | A unique identifier for the order. |
+| `id` | `uint256` | Required | A unique identifier for the Order. |
 | `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
-| `makerWallet` | `Party` | Required | The maker of the order who sets price. |
-| `makerParam` | `uint256` | Required | The expiry in seconds since unix epoch. |
-| `makerToken` | `address` | Required | A unique identifier for the order. |
-| `totalCost` | `uint256` | Required | A unique identifier for the order. |
+| `makerWallet` | `Party` | Required | The Maker of the Order who sets price. |
+| `makerParam` | `uint256` | Required | The amount or identifier of the token the Maker sends. |
+| `makerToken` | `address` | Required | The address of the token the Maker sends. |
+| `takerParam` | `uint256` | Required | The amount or identifier of the token the Taker sends. |
 | `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
-| `r` | `bytes32` | Required | A unique identifier for the order. |
-| `s` | `bytes32` | Required | A unique identifier for the order. |
-| `v` | `uint8` | Required | The expiry in seconds since unix epoch. |
+| `r` | `bytes32` | Required | The `r` value of an ECDSA signature. |
+| `s` | `bytes32` | Required | The `s` value of an ECDSA signature. |
+| `v` | `uint8` | Required | The `v` value of an ECDSA signature. |
 
 ### Reverts
 
 | Reason | Scenario |
 | :--- | :--- |
 | `ORDER_EXPIRED` | Order has an `expiry` lower than the current block time. |
-| `ORDER_UNAVAILABLE` | Order has already been taken by its `id` value. |
-| `SIGNATURE_INVALID` | Order has been signed by the maker but the signature is incorrect. |
+| `ORDER_UNAVAILABLE` | Order has already been taken or canceled. |
+| `SIGNATURE_INVALID` | Signature provided does not match the Order provided. |
 | `VALUE_INCORRECT` | Value of the transaction (ether) does not match the cost of the purchase. |
 
 ## Cancels
-Provide an array of `ids`, unique by maker address, to mark one or more orders as canceled.
+Provide an array of `ids`, unique by Maker address, to mark one or more Orders as canceled.
 ```Solidity
 function cancel(uint256[] memory ids) public
 ```
 
 ## Authorizations
-Peers may authorize other peers to make (sign) or take (send) orders on their behalf. This is useful for delegating authorization to a trusted third party, whether a user account or smart contract. An authorization works for both sides of a Swap, regardless of whether the delegate signing or sending on ones behalf.
+Peers may authorize other peers to make (sign) or take (send) Orders on their behalf. This is useful for delegating authorization to a trusted third party, whether a user account or smart contract. An authorization works for both sides of a Swap, regardless of whether the delegate signing or sending on ones behalf.
 
 ### Authorize
-Authorize a delegate account or contract to make or take orders on the sender's behalf. **Not** available for **Swap (Light)** or **Purchase**.
+Authorize a delegate account or contract to make or take Orders on the sender's behalf. **Not** available for **Swap (Light)** or **Purchase**.
 ```Solidity
 function authorize(address delegate, uint256 expiry) external returns (bool)
 ```
@@ -260,6 +264,37 @@ function authorize(address delegate, uint256 expiry) external returns (bool)
 Revoke the authorization of a delegate account or contract. **Not** available for **Swap (Light)** or **Purchase**.
 ```Solidity
 function revoke(address delegate) external returns (bool)
+```
+
+## Events
+Ethereum transactions often emit events to indicate state changes or other provide useful information. The `indexed` keyword indicates that a filter may be set on the property. Learn more about events and filters in the [official documentation](https://solidity.readthedocs.io/en/v0.5.8/contracts.html#events).
+
+### Swap
+Emitted with a successful **Swap**, **Swap (Light)**, or **Purchase** transaction.
+
+```Solidity
+event Swap(
+  uint256 indexed id,
+  address indexed makerAddress,
+  uint256 makerParam,
+  address makerToken,
+  address takerAddress,
+  uint256 takerParam,
+  address takerToken,
+  address affiliateAddress,
+  uint256 affiliateParam,
+  address affiliateToken
+);
+```
+
+### Cancel
+Emitted with a successful **Cancel** transaction.
+
+```Solidity
+event Cancel(
+  uint256 indexed id,
+  address indexed makerAddress
+);
 ```
 
 ## Signatures
@@ -310,16 +345,19 @@ You can use `signTypedData` with **Full Swap** by calling it directly. Read more
 ```JavaScript
 const ethUtil = require('ethereumjs-util')
 const sigUtil = require('eth-sig-util')
+const DOMAIN_NAME = 'AIRSWAP'
+const DOMAIN_VERSION = '2'
+const verifyingContract = '0x0...' // Address of the Swap Contract
 const sig = sigUtil.signTypedData(privateKey, {
   data: {
-    types,
+    types, // See: tests/lib/constants.js:5
     domain: {
       name: DOMAIN_NAME,
       version: DOMAIN_VERSION,
       verifyingContract,
     },
     primaryType: 'Order',
-    message: order,
+    message: order, // See: tests/lib/orders.js:28
   },
 });
 const { v, r, s } = ethUtil.fromRpcSig(sig)
@@ -342,7 +380,7 @@ return {
 | `constants.js` | `tests/lib` | Constant values and defaults |
 | `hashes.js` | `tests/lib` | Functions for EIP-712 signature hashing |
 | `helpers.js` | `tests/lib` | Helpers to check allowances and balances |
-| `orders.js` | `tests/lib` | Generates order objects for use in tests |
+| `orders.js` | `tests/lib` | Generates Order objects for use in tests |
 | `signatures.js` | `tests/lib` | Generates various kinds of signatures |
 
 ## Tooling

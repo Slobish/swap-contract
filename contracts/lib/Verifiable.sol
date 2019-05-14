@@ -25,11 +25,11 @@ contract Verifiable {
   }
 
   struct Signature {
-    uint8 v;
+    address signer;
     bytes32 r;
     bytes32 s;
+    uint8 v;
     bytes1 version;
-    address signer;
   }
 
   bytes32 internal constant DOMAIN_TYPEHASH = keccak256(abi.encodePacked(

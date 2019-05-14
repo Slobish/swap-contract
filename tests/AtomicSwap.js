@@ -45,7 +45,7 @@ contract('Swap', ([
       swapContract = await AtomicSwap.deployed()
       swapAddress = swapContract.address
 
-      swap = swapContract.methods['swap((uint256,uint256,(address,address,uint256),(address,address,uint256),(address,address,uint256)),(uint8,bytes32,bytes32,bytes1,address))']
+      swap = swapContract.methods['swap((uint256,uint256,(address,address,uint256),(address,address,uint256),(address,address,uint256)),(address,bytes32,bytes32,uint8,bytes1))']
       swapLight = swapContract.methods['swap(uint256,address,uint256,address,address,uint256,address,uint256,bytes32,bytes32,uint8)']
       purchase = swapContract.methods['purchase(uint256,address,uint256,address,uint256,uint256,bytes32,bytes32,uint8)']
 

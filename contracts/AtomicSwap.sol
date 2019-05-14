@@ -18,7 +18,7 @@ contract AtomicSwap is Authorizable, Transferable, Verifiable {
   // Maps makers to orders by ID as TAKEN (0x01) or CANCELED (0x02).
   mapping (address => mapping (uint256 => byte)) public makerOrderStatus;
 
-  // Event emitted on swap.
+  // Emitted on Swap.
   event Swap(
     uint256 indexed id,
     address indexed makerAddress,
@@ -32,7 +32,7 @@ contract AtomicSwap is Authorizable, Transferable, Verifiable {
     address affiliateToken
   );
 
-  // Event emitted on order cancel.
+  // Emitted on Cancel.
   event Cancel(
     uint256 indexed id,
     address indexed makerAddress
@@ -191,14 +191,15 @@ contract AtomicSwap is Authorizable, Transferable, Verifiable {
   }
 
   /**
-    * @notice Atomic Token Purchase
-    * @dev Determines type (ERC-20 or ERC-721) with ERC-165
+    * @notice Atomic Token Purchase for ETH
+    * @dev Determines type (ERC-20 or ERC-721) with ERC-165.
+    * @dev Requires a value be sent equivalent to takerParam.
     *
     * @param id uint256
     * @param makerWallet address
     * @param makerParam uint256
     * @param makerToken address
-    * @param totalCost uint256
+    * @param takerParam uint256
     * @param expiry uint256
     * @param r bytes32
     * @param s bytes32
@@ -209,7 +210,7 @@ contract AtomicSwap is Authorizable, Transferable, Verifiable {
     address makerWallet,
     uint256 makerParam,
     address makerToken,
-    uint256 totalCost,
+    uint256 takerParam,
     uint256 expiry,
     bytes32 r,
     bytes32 s,
@@ -224,7 +225,7 @@ contract AtomicSwap is Authorizable, Transferable, Verifiable {
     require(makerOrderStatus[makerWallet][id] == OPEN,
       "ORDER_UNAVAILABLE");
 
-    require(msg.value == totalCost,
+    require(msg.value == takerParam,
       "VALUE_INCORRECT");
 
     require(isValidSimple(id,
@@ -232,7 +233,7 @@ contract AtomicSwap is Authorizable, Transferable, Verifiable {
       makerParam,
       makerToken,
       msg.sender,
-      totalCost,
+      takerParam,
       address(0),
       expiry,
       r, s, v
@@ -241,10 +242,10 @@ contract AtomicSwap is Authorizable, Transferable, Verifiable {
     makerOrderStatus[makerWallet][id] = TAKEN;
 
     transferAny(makerToken, makerWallet, msg.sender, makerParam);
-    send(makerWallet, totalCost);
+    send(makerWallet, takerParam);
 
     emit Swap(id, makerWallet, makerParam, makerToken,
-      msg.sender, totalCost, address(0),
+      msg.sender, takerParam, address(0),
       address(0), 0, address(0)
     );
 
