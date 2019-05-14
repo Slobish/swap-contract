@@ -8,7 +8,7 @@
     "eslint": "yarn eslint \"./tests/**/*.js\"",
     "migrate": "yarn truffle migrate",
     "solhint": "yarn solhint \"./contracts/**/*.sol\"",
-    "test": "yarn truffle test \"./tests/Swap.js\""
+    "test": "yarn truffle test \"./tests/AtomicSwap.js\""
   },
   "devDependencies": {
     "babel-eslint": "^10.0.1",

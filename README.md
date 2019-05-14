@@ -9,32 +9,6 @@ $ cd swap-protocol
 $ yarn
 $ yarn coverage
 ```
-## Table of Contents
-
-* [Highlights](#highlights)
-* [Definitions](#definitions)
-* [Swap](#swap)
-  * [Arguments](#arguments)
-  * [Order](#order)
-  * [Party](#party)
-  * [Signature](#signature)
-  * [Reverts](#revert-cases)
-* [Swap (Light)](#light-swap)
-  * [Arguments](#arguments)
-  * [Reverts](#revert-cases)
-* [Purchase](#purchase)
-  * [Arguments](#arguments)
-  * [Reverts](#revert-cases)
-* [Cancel](#cancel)
-* [Authorizations](#authorize)
-  * [Authorize](#authorize)
-  * [Revoke](#revoke)
-* [Signatures](#signatures)
-  * [Simple](#simple)
-  * [Typed Data](#typed-data)
-* [Sources](#sources)
-* [Tooling](#tooling)
-
 
 ## Highlights
 
@@ -56,6 +30,31 @@ Compensate those who connect peers that trade.
 ### Batch Cancels
 Cancel multiple orders in a single transaction.
 
+## Table of Contents
+
+* [Definitions](#definitions)
+* [Swap](#swap)
+  * [Arguments](#arguments)
+  * [Order](#order)
+  * [Party](#party)
+  * [Signature](#signature)
+  * [Reverts](#revert)
+* [Swap (Light)](#swap-light)
+  * [Arguments](#arguments-1)
+  * [Reverts](#revert-1)
+* [Purchase](#purchase)
+  * [Arguments](#arguments-2)
+  * [Reverts](#revert-2)
+* [Cancel](#cancel)
+* [Authorizations](#authorize)
+  * [Authorize](#authorize)
+  * [Revoke](#revoke)
+* [Signatures](#signatures)
+  * [Simple](#simple)
+  * [Typed Data](#typed-data)
+* [Sources](#sources)
+* [Tooling](#tooling)
+
 ## Definitions
 
 | Term | Definition |
@@ -75,8 +74,7 @@ Swap between tokens (ERC-20 or ERC-721) or ETH with all features using typed dat
 ```Solidity
 function swap(
   Order calldata order,
-  Signature calldata signature,
-  address signer
+  Signature calldata signature
 ) external payable
 ```
 
@@ -86,7 +84,6 @@ function swap(
 | :--- | :--- | :--- | :--- |
 | `order` | `Order` | Required | A unique identifier for the order. |
 | `signature` | `Signature` | Required | The expiry in seconds since unix epoch. |
-| `signer` | `address` | Required | A unique identifier for the order. |
 
 ### Order
 ```Solidity

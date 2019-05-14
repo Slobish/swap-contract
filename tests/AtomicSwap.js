@@ -1,4 +1,4 @@
-const Swap = artifacts.require('AtomicSwap')
+const AtomicSwap = artifacts.require('AtomicSwap')
 const AST = artifacts.require('FungibleA')
 const DAI = artifacts.require('FungibleB')
 const ConcertTicket = artifacts.require('NonFungibleA')
@@ -42,7 +42,7 @@ contract('Swap', ([
 
   describe('Deploying...', () => {
     it('Deployed Swap contract', async () => {
-      swapContract = await Swap.deployed()
+      swapContract = await AtomicSwap.deployed()
       swapAddress = swapContract.address
 
       swap = swapContract.methods['swap((uint256,uint256,(address,address,uint256),(address,address,uint256),(address,address,uint256)),(uint8,bytes32,bytes32,bytes1,address))']
