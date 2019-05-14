@@ -36,7 +36,7 @@ contract('Swap', ([
 
   let swap
   let swapLight
-  let purchase
+  let cancel
 
   orders.setKnownAccounts([aliceAddress, bobAddress, carolAddress, davidAddress])
 
@@ -47,7 +47,7 @@ contract('Swap', ([
 
       swap = swapContract.methods['swap((uint256,uint256,(address,address,uint256),(address,address,uint256),(address,address,uint256)),(address,bytes32,bytes32,uint8,bytes1))']
       swapLight = swapContract.methods['swap(uint256,address,uint256,address,address,uint256,address,uint256,bytes32,bytes32,uint8)']
-      purchase = swapContract.methods['purchase(uint256,address,uint256,address,uint256,uint256,bytes32,bytes32,uint8)']
+      cancel = swapContract.methods['cancel(uint256[])']
 
       orders.setVerifyingContract(swapAddress)
     })
@@ -336,11 +336,11 @@ contract('Swap', ([
     })
 
     it('Checks that Alice is able to cancel order with id "12345"', async () => {
-      emitted(await swapContract.cancel([_order.id], { from: aliceAddress }), 'Cancel')
+      emitted(await cancel([_order.id], { from: aliceAddress }), 'Cancel')
     })
 
     it('Checks that Alice is unable to cancel the same order twice', async () => {
-      none(await swapContract.cancel([_order.id], { from: aliceAddress }), 'Cancel')
+      none(await cancel([_order.id], { from: aliceAddress }), 'Cancel')
     })
 
     it('Checks that Bob is unable to take an order with id "12345"', async () => {
@@ -440,7 +440,7 @@ contract('Swap', ([
     })
   })
 
-  describe('Swap (Light)s', () => {
+  describe('Swap (Light)', () => {
     it('Checks that a Swap (Light) succeeds', async () => {
       const { order } = await orders.getOrder({
         maker: {
@@ -473,7 +473,7 @@ contract('Swap', ([
       ), 'Swap')
     })
 
-    it('Checks that an invalid V1 signature will fail', async () => {
+    it('Checks that an invalid simple signature will fail', async () => {
       const { order } = await orders.getOrder({
         maker: {
           wallet: aliceAddress,
@@ -506,8 +506,8 @@ contract('Swap', ([
     })
   })
 
-  describe('Purchases', () => {
-    it('Checks that a purchase succeeds', async () => {
+  describe('Swap (Light) for ETH', () => {
+    it('Checks that a Swap (Light) for ETH succeeds', async () => {
       const { order } = await orders.getOrder({
         maker: {
           wallet: aliceAddress,
@@ -523,12 +523,14 @@ contract('Swap', ([
 
       const signature = await signatures.getSimpleSignature(order, aliceAddress, swapAddress)
 
-      emitted(await purchase(
+      emitted(await swapLight(
         order.id,
         order.maker.wallet,
         order.maker.param,
         order.maker.token,
+        order.taker.wallet,
         order.taker.param,
+        order.taker.token,
         order.expiry,
         signature.r,
         signature.s,

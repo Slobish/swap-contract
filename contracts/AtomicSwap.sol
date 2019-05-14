@@ -76,7 +76,7 @@ contract AtomicSwap is Authorizable, Transferable, Verifiable {
         "SENDER_UNAUTHORIZED");
     }
 
-    // Mark the id as swaped (0x01).
+    // Mark the order as taken (0x01).
     makerOrderStatus[order.maker.wallet][order.id] = TAKEN;
 
     // If the takerToken is null, expect that this is an order for ether.
@@ -100,9 +100,9 @@ contract AtomicSwap is Authorizable, Transferable, Verifiable {
 
     } else {
 
-      // Perform the trade for ether or tokens.
+      // The amount of ether sent must be zero.
       require(msg.value == 0,
-          "VALUE_MUST_BE_ZERO");
+        "VALUE_MUST_BE_ZERO");
 
       // Perform the swap between maker and taker.
       safeTransferAny("MAKER", order.maker.wallet, order.taker.wallet, order.maker.param, order.maker.token);
@@ -156,7 +156,7 @@ contract AtomicSwap is Authorizable, Transferable, Verifiable {
     bytes32 s,
     uint8 v
   )
-    external
+    external payable
   {
 
     require(expiry > block.timestamp,
@@ -177,10 +177,31 @@ contract AtomicSwap is Authorizable, Transferable, Verifiable {
       r, s, v
     ), "SIGNATURE_INVALID");
 
+    // Mark the order as taken (0x01).
     makerOrderStatus[makerWallet][id] = TAKEN;
 
+    if (takerToken == address(0)) {
+
+      // The amount of ether sent must match the taker param.
+      require(msg.value == takerParam,
+        "VALUE_INCORRECT");
+
+      // Send the ether amount to the maker.
+      send(makerWallet, msg.value);
+
+    } else {
+
+      // The amount of ether sent must be zero.
+      require(msg.value == 0,
+        "VALUE_MUST_BE_ZERO");
+
+      // Transfer the taker side of the swap.
+      transferAny(takerToken, takerWallet, makerWallet, takerParam);
+
+    }
+
+    // Transfer the maker side of the swap.
     transferAny(makerToken, makerWallet, takerWallet, makerParam);
-    transferAny(takerToken, takerWallet, makerWallet, takerParam);
 
     emit Swap(id,
       makerWallet, makerParam, makerToken,
@@ -190,70 +211,9 @@ contract AtomicSwap is Authorizable, Transferable, Verifiable {
 
   }
 
-  /**
-    * @notice Atomic Token Purchase for ETH
-    * @dev Determines type (ERC-20 or ERC-721) with ERC-165.
-    * @dev Requires a value be sent equivalent to takerParam.
-    *
-    * @param id uint256
-    * @param makerWallet address
-    * @param makerParam uint256
-    * @param makerToken address
-    * @param takerParam uint256
-    * @param expiry uint256
-    * @param r bytes32
-    * @param s bytes32
-    * @param v uint8
-    */
-  function purchase(
-    uint256 id,
-    address makerWallet,
-    uint256 makerParam,
-    address makerToken,
-    uint256 takerParam,
-    uint256 expiry,
-    bytes32 r,
-    bytes32 s,
-    uint8 v
-  )
-    external payable
-  {
-
-    require(expiry > block.timestamp,
-      "ORDER_EXPIRED");
-
-    require(makerOrderStatus[makerWallet][id] == OPEN,
-      "ORDER_UNAVAILABLE");
-
-    require(msg.value == takerParam,
-      "VALUE_INCORRECT");
-
-    require(isValidSimple(id,
-      makerWallet,
-      makerParam,
-      makerToken,
-      msg.sender,
-      takerParam,
-      address(0),
-      expiry,
-      r, s, v
-    ), "SIGNATURE_INVALID");
-
-    makerOrderStatus[makerWallet][id] = TAKEN;
-
-    transferAny(makerToken, makerWallet, msg.sender, makerParam);
-    send(makerWallet, takerParam);
-
-    emit Swap(id, makerWallet, makerParam, makerToken,
-      msg.sender, takerParam, address(0),
-      address(0), 0, address(0)
-    );
-
-  }
-
-  /**   @notice Cancel a batch of orders.
-    *   @dev Canceled orders are marked with byte 0x02.
-    *   @param ids uint256[]
+  /** @notice Cancel a batch of orders.
+    * @dev Canceled orders are marked with byte 0x02.
+    * @param ids uint256[]
     */
   function cancel(uint256[] calldata ids) external {
     for (uint256 i = 0; i < ids.length; i++) {

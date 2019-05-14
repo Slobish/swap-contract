@@ -25,7 +25,7 @@ Sign informative messages for improved transparency.
 Authorize peers to act on behalf of others.
 
 ### Affiliate Fees
-Compensate those who connect peers that trade.
+Compensate those who facilitate trades.
 
 ### Batch Cancels
 Cancel multiple orders in a single transaction.
@@ -42,9 +42,6 @@ Cancel multiple orders in a single transaction.
 * [Swap (Light)](#swap-light)
   * [Arguments](#arguments-1)
   * [Reverts](#reverts-1)
-* [Purchase](#purchase)
-  * [Arguments](#arguments-2)
-  * [Reverts](#reverts-2)
 * [Cancel](#cancel)
 * [Authorizations](#authorize)
   * [Authorize](#authorize)
@@ -153,14 +150,14 @@ struct Signature {
 | `ORDER_ALREADY_CANCELED` | Order has already been canceled by its `id` value. |
 | `ORDER_EXPIRED` | Order has an `expiry` lower than the current block time. |
 | `SENDER_UNAUTHORIZED` | Order has been sent by an account that has not been authorized to send it. |
-| `VALUE_MUST_BE_SENT` | Order indicates an ether (ETH) Swap, but insufficient ether was sent. |
-| `VALUE_MUST_BE_ZERO` | Order indicates a token Swap, but ether (ETH) was sent along with the transaction. |
-| `MAKER_INSUFFICIENT_ALLOWANCE` | Transfer was attempted but the Maker has not approved the Swap Contract to transfer the balance. |
-| `MAKER_INSUFFICIENT_BALANCE` | Transfer was attempted but the Maker has an insufficient balance. |
-| `TAKER_INSUFFICIENT_ALLOWANCE` | Transfer was attempted but the Taker has not approved the Swap Contract to transfer the balance. |
-| `TAKER_INSUFFICIENT_BALANCE` | Transfer was attempted but the Taker has an insufficient balance. |
-| `INVALID_AUTH_DELEGATE` | Delegate address is the same as the transaction sender address. |
-| `INVALID_AUTH_EXPIRY` | Delegate authorization was attempted but the expiry time has already passed. |
+| `VALUE_MUST_BE_SENT` | Order indicates an ether Swap but insufficient ether was sent. |
+| `VALUE_MUST_BE_ZERO` | Order indicates a token Swap but ether was sent. |
+| `MAKER_INSUFFICIENT_ALLOWANCE` | Maker has not approved the Swap contract to transfer the balance. |
+| `MAKER_INSUFFICIENT_BALANCE` | Maker has an insufficient balance. |
+| `TAKER_INSUFFICIENT_ALLOWANCE` | Taker has not approved the Swap contract to transfer the balance. |
+| `TAKER_INSUFFICIENT_BALANCE` | Taker has an insufficient balance. |
+| `INVALID_AUTH_DELEGATE` | Delegate address is the same as the sender address. |
+| `INVALID_AUTH_EXPIRY` | Authorization expiry time is in the past. |
 
 ## Swap (Light)
 Lightweight swap between tokens (ERC-20 or ERC-721) using simple signatures.
@@ -204,50 +201,6 @@ function swap(
 | `ORDER_UNAVAILABLE` | Order has already been taken or canceled. |
 | `SIGNATURE_INVALID` | Signature provided does not match the Order provided. |
 
-## Purchase
-Lightweight purchase of a token for ether using simple signatures.
-
-* Transaction `sender` must be same as `takerAddress` in the signature.
-* Transaction `value` must be same as `takerParam` in the signature.
-
-```Solidity
-function purchase(
-  uint256 id,
-  address makerWallet,
-  uint256 makerParam,
-  address makerToken,
-  uint256 takerParam,
-  uint256 expiry,
-  bytes32 r,
-  bytes32 s,
-  uint8 v
-) external payable
-```
-
-### Arguments
-
-| Name | Type | Optionality | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | `uint256` | Required | A unique identifier for the Order. |
-| `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
-| `makerWallet` | `Party` | Required | The Maker of the Order who sets price. |
-| `makerParam` | `uint256` | Required | The amount or identifier of the token the Maker sends. |
-| `makerToken` | `address` | Required | The address of the token the Maker sends. |
-| `takerParam` | `uint256` | Required | The amount or identifier of the token the Taker sends. |
-| `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
-| `r` | `bytes32` | Required | The `r` value of an ECDSA signature. |
-| `s` | `bytes32` | Required | The `s` value of an ECDSA signature. |
-| `v` | `uint8` | Required | The `v` value of an ECDSA signature. |
-
-### Reverts
-
-| Reason | Scenario |
-| :--- | :--- |
-| `ORDER_EXPIRED` | Order has an `expiry` lower than the current block time. |
-| `ORDER_UNAVAILABLE` | Order has already been taken or canceled. |
-| `SIGNATURE_INVALID` | Signature provided does not match the Order provided. |
-| `VALUE_INCORRECT` | Value of the transaction (ether) does not match the cost of the purchase. |
-
 ## Cancels
 Provide an array of `ids`, unique by Maker address, to mark one or more Orders as canceled.
 ```Solidity
@@ -264,7 +217,7 @@ function authorize(address delegate, uint256 expiry) external returns (bool)
 ```
 
 ### Revoke
-Revoke the authorization of a delegate account or contract. **Not** available for **Swap (Light)** or **Purchase**.
+Revoke the authorization of a delegate account or contract. **Not** available for **Swap (Light)**.
 ```Solidity
 function revoke(address delegate) external returns (bool)
 ```
@@ -273,7 +226,7 @@ function revoke(address delegate) external returns (bool)
 Ethereum transactions often emit events to indicate state changes or other provide useful information. The `indexed` keyword indicates that a filter may be set on the property. Learn more about events and filters in the [official documentation](https://solidity.readthedocs.io/en/v0.5.8/contracts.html#events).
 
 ### Swap
-Emitted with a successful **Swap**, **Swap (Light)**, or **Purchase** transaction.
+Emitted with a successful Swap.
 
 ```Solidity
 event Swap(
@@ -291,7 +244,7 @@ event Swap(
 ```
 
 ### Cancel
-Emitted with a successful **Cancel** transaction.
+Emitted with a successful Cancel.
 
 ```Solidity
 event Cancel(
@@ -304,7 +257,7 @@ event Cancel(
 When producing [ECDSA](https://hackernoon.com/a-closer-look-at-ethereum-signatures-5784c14abecc) signatures, Ethereum wallets prefix signed data with byte `\x19` to stay out of range of valid RLP so that a signature cannot be executed as a transaction. [EIP-191](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-191.md) standardizes this prefixing to include existing `personal_sign` behavior and [EIP-712](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md) implements it for structured data, which makes the data more transparent for the signer. Signatures are comprised of parameters `v`, `r`, and `s`. Read more about [Ethereum Signatures]().
 
 ### Simple
-For use in **Swap Light** and **Purchase**. Signature parameters are passed directly to the function. Utilizes a simpler and cheaper hashing function.
+For use in **Swap (Light)**. Signature parameters are passed directly to the function. Utilizes a simpler and cheaper hashing function.
 
 ```JavaScript
 const msg = web3.utils.soliditySha3(
@@ -326,7 +279,7 @@ const { v, r, s } = ethUtil.fromRpcSig(sig);
 ```
 
 ### Typed Data
-The `Signature` struct is passed to the function including a byte `version` to indicate `personal_sign` (`0x45`) or `signTypedData` (`0x01`) so that hashes can be recreated correctly in contract code.
+For use in **Swap**. The `Signature` struct is passed to the function including a byte `version` to indicate `personal_sign` (`0x45`) or `signTypedData` (`0x01`) so that hashes can be recreated correctly in contract code.
 
 #### Personal Sign
 You can use `personal_sign` with **Full Swap** by using an EIP-712 hashing function.
