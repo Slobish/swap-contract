@@ -254,7 +254,7 @@ contract AtomicSwap is Authorizable, Transferable, Verifiable {
     *   @dev Canceled orders are marked with byte 0x02.
     *   @param ids uint256[]
     */
-  function cancel(uint256[] memory ids) public {
+  function cancel(uint256[] calldata ids) external {
     for (uint256 i = 0; i < ids.length; i++) {
       if (makerOrderStatus[msg.sender][ids[i]] == OPEN) {
         makerOrderStatus[msg.sender][ids[i]] = CANCELED;
