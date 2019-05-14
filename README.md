@@ -256,28 +256,6 @@ event Cancel(
 ## Signatures
 When producing [ECDSA](https://hackernoon.com/a-closer-look-at-ethereum-signatures-5784c14abecc) signatures, Ethereum wallets prefix signed data with byte `\x19` to stay out of range of valid RLP so that a signature cannot be executed as a transaction. [EIP-191](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-191.md) standardizes this prefixing to include existing `personal_sign` behavior and [EIP-712](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md) implements it for structured data, which makes the data more transparent for the signer. Signatures are comprised of parameters `v`, `r`, and `s`. Read more about [Ethereum Signatures]().
 
-### Simple
-For use in **Swap (Light)**. Signature parameters are passed directly to the function. Utilizes a simpler and cheaper hashing function.
-
-```JavaScript
-const msg = web3.utils.soliditySha3(
-  // Version 0x00: Data with intended validator (verifyingContract)
-  { type: 'bytes1', value: '0x0' },
-  { type: 'address', value: verifyingContract },
-  { type: 'uint256', value: orderId },
-  { type: 'address', value: makerWallet },
-  { type: 'uint256', value: makerParam },
-  { type: 'address', value: makerToken },
-  { type: 'address', value: takerWallet },
-  { type: 'uint256', value: takerParam },
-  { type: 'address', value: takerToken },
-  { type: 'uint256', value: expiry },
-);
-const orderHashHex = ethUtil.bufferToHex(msg);
-const sig = await web3.eth.sign(orderHashHex, signer);
-const { v, r, s } = ethUtil.fromRpcSig(sig);
-```
-
 ### Typed Data
 For use in **Swap**. The `Signature` struct is passed to the function including a byte `version` to indicate `personal_sign` (`0x45`) or `signTypedData` (`0x01`) so that hashes can be recreated correctly in contract code.
 
@@ -321,6 +299,28 @@ return {
   version: '0x01', // Version 0x01: signTypedData
   v, r, s
 }
+```
+
+### Simple
+For use in **Swap (Light)**. Signature parameters are passed directly to the function.
+
+```JavaScript
+const msg = web3.utils.soliditySha3(
+  // Version 0x00: Data with intended validator (verifyingContract)
+  { type: 'bytes1', value: '0x0' },
+  { type: 'address', value: verifyingContract },
+  { type: 'uint256', value: orderId },
+  { type: 'address', value: makerWallet },
+  { type: 'uint256', value: makerParam },
+  { type: 'address', value: makerToken },
+  { type: 'address', value: takerWallet },
+  { type: 'uint256', value: takerParam },
+  { type: 'address', value: takerToken },
+  { type: 'uint256', value: expiry },
+);
+const orderHashHex = ethUtil.bufferToHex(msg);
+const sig = await web3.eth.sign(orderHashHex, signer);
+const { v, r, s } = ethUtil.fromRpcSig(sig);
 ```
 
 ## Sources
