@@ -37,7 +37,7 @@ jobs:
           name: yarn install
           command: yarn install
       - run: yarn truffle compile
-      - run: yarn ganache-cli > /dev/null & sleep 10 && yarn truffle test
+      - run: yarn ganache-cli > /dev/null & sleep 10 && yarn test
 
 workflows:
   checkout_and_test:
