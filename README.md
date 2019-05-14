@@ -204,7 +204,7 @@ function swap(
 ## Cancels
 Provide an array of `ids`, unique by Maker address, to mark one or more Orders as canceled.
 ```Solidity
-function cancel(uint256[] memory ids) public
+function cancel(uint256[] memory ids) external
 ```
 
 ## Authorizations
