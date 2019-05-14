@@ -30,17 +30,6 @@ Compensate those who connect peers.
 ### Batch Cancels
 Cancel multiple orders in a single transaction.
 
-## Tools
-
-Contracts written in [solidity 0.5.8](https://solidity.readthedocs.io/en/v0.5.7/) and tests written in [Mocha / Chai](https://truffleframework.com/docs/truffle/testing/writing-tests-in-javascript) with JavaScript.
-
-| Command | Description |
-| :--- | :--- |
-| `yarn test` | Run the tests found in `/test`. |
-| `yarn coverage` | Run a test coverage report. [Forked](https://github.com/dmosites/solidity-coverage) to support `address payable` syntax. |
-| `yarn solhint` | Run a syntax linter for the Solidity code. |
-| `yarn eslint` | Run a syntax linter for the JavaScript code. |
-
 ## Definitions
 
 | Term | Definition |
@@ -53,20 +42,9 @@ Contracts written in [solidity 0.5.8](https://solidity.readthedocs.io/en/v0.5.7/
 | Delegate | An *optional* party authorized to make or take orders on behalf of another party. |
 | Token | A fungible (ERC-20) or non-fungible (ERC-721) Ethereum asset to be traded. |
 
-## Sources
+## Purchase
 
-| File | Functions |
-| :--- | :--- |
-| `AtomicSwap.sol` | `swap` `purchase` `cancel` |
-| `lib` / `Transferable.sol` | `send` `transferAny` `safeTransferAny` |
-| `lib` / `Authorizable.sol` | `authorize` `revoke` `isAuthorized` |
-| `lib` / `Verifiable.sol` | `isValid` `isValidSimple` |
-
-## Transactions
-
-### Purchase
-
-Light weight purchase of a token for ether. Uses `97,438` gas.
+Light weight purchase of a token for ether.
 ```Solidity
 function purchase(
   uint256 id,
@@ -75,21 +53,35 @@ function purchase(
   address makerToken,
   uint256 totalCost,
   uint256 expiry,
-  uint8 v,
   bytes32 r,
-  bytes32 s
+  bytes32 s,
+  uint8 v
 ) external payable
 ```
 
-| Error | Scenario |
+| Argument | Type | Optionality | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `uint256` | Required | A unique identifier for the order. |
+| `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
+| `makerWallet` | `Party` | Required | The maker of the order who sets price. |
+| `makerParam` | `uint256` | Required | The expiry in seconds since unix epoch. |
+| `makerToken` | `address` | Required | A unique identifier for the order. |
+| `totalCost` | `uint256` | Required | A unique identifier for the order. |
+| `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
+| `r` | `bytes32` | Required | A unique identifier for the order. |
+| `s` | `bytes32` | Required | A unique identifier for the order. |
+| `v` | `uint8` | Required | The expiry in seconds since unix epoch. |
+
+### Errors
+| Reason | Scenario |
 | :--- | :--- |
 | `ORDER_EXPIRED` | Order has an `expiry` lower than the current block time. |
 | `ORDER_UNAVAILABLE` | Order has already been taken by its `id` value. |
 | `SIGNATURE_INVALID` | Order has been signed by the maker but the signature is incorrect. |
 | `VALUE_INCORRECT` | Value of the transaction (ether) does not match the cost of the purchase. |
 
-### Light Swap
-Swap between tokens (ERC-20 or ERC-721) using legacy signatures. Uses `117,945` gas.
+## Light Swap
+Swap between tokens (ERC-20 or ERC-721) using legacy signatures.
 
 ```Solidity
 function swap(
@@ -107,14 +99,28 @@ function swap(
 ) external
 ```
 
-| Error | Scenario |
+| Argument | Type | Optionality | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `uint256` | Required | A unique identifier for the order. |
+| `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
+| `makerWallet` | `address` | Required | A unique identifier for the order. |
+| `makerParam` | `uint256` | Required | The expiry in seconds since unix epoch. |
+| `makerToken` | `address` | Required | A unique identifier for the order. |
+| `totalCost` | `uint256` | Required | A unique identifier for the order. |
+| `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
+| `r` | `bytes32` | Required | A unique identifier for the order. |
+| `s` | `bytes32` | Required | A unique identifier for the order. |
+| `v` | `uint8` | Required | The expiry in seconds since unix epoch. |
+
+### Errors
+| Reason | Scenario |
 | :--- | :--- |
 | `ORDER_EXPIRED` | Order has an `expiry` lower than the current block time. |
 | `ORDER_UNAVAILABLE` | Order has already been taken by its `id` value. |
 | `SIGNATURE_INVALID` | Order has been signed by the maker but the signature is incorrect. |
 
-### Full Swap
-Swap between tokens (ERC-20 or ERC-721) or ether, full features, using typed data signatures. Uses from `123,013` to `199,958` gas depending on features.
+## Full Swap
+Swap between tokens (ERC-20 or ERC-721) or ether, full features, using typed data signatures.
 
 ```Solidity
 function swap(
@@ -124,7 +130,23 @@ function swap(
 ) external payable
 ```
 
+| Argument | Type | Optionality | Description |
+| :--- | :--- | :--- | :--- |
+| `order` | `Order` | Required | A unique identifier for the order. |
+| `signature` | `Signature` | Required | The expiry in seconds since unix epoch. |
+| `signer` | `address` | Required | A unique identifier for the order. |
+
 #### Order
+```Solidity
+struct Order {
+  uint256 id;
+  uint256 expiry;
+  Party maker;
+  Party taker;
+  Party affiliate;
+}
+```
+
 | Property | Type | Optionality | Description |
 | :--- | :--- | :--- | :--- |
 | `id` | `uint256` | Required | A unique identifier for the order. |
@@ -133,24 +155,7 @@ function swap(
 | `taker` | `Party` | Required | The taker of the order who accepts price. |
 | `affiliate` | `Party` | Optional | An affiliate to be paid by the maker. |
 
-```Solidity
-struct Order {
-  uint256 expiry;
-  uint256 id;
-  address signer;
-  Party maker;
-  Party taker;
-  Party affiliate;
-}
-```
-
 #### Party
-| Property | Type | Optionality | Description |
-| :--- | :--- | :--- |
-| `wallet` | `address` | Required | The wallet address of a party. |
-| `token` | `address` | Required | The address of the token the party will send or receive. |
-| `param` | `uint256` | Required | Either an amount of ERC-20 or identifier of an ERC-721. |
-
 ```Solidity
 struct Party {
   address wallet;
@@ -158,6 +163,13 @@ struct Party {
   uint256 param;
 }
 ```
+
+| Property | Type | Optionality | Description |
+| :--- | :--- | :--- |
+| `wallet` | `address` | Required | The wallet address of a party. |
+| `token` | `address` | Required | The address of the token the party will send or receive. |
+| `param` | `uint256` | Required | Either an amount of ERC-20 or identifier of an ERC-721. |
+
 
 #### Signature
 Ethereum wallets prefix signed data with byte `\x19` to stay out of range of valid transaction encoding. [EIP-191](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-191.md) standardizes this prefixing to include existing `personal_sign` behavior and [EIP-712](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md) implements it for structured data, which can be interpreted by the signer. In addition to the standard parameters of an elliptic curve signature `v`, `r`, and `s` we include a byte `version` to indicate `personal_sign` (`0x45`) or `signTypedData` (`0x01`) so that hashes can be recreated correctly in contract code.
@@ -205,3 +217,23 @@ For use in the **Purchase**, **Light Swap**, or **Full Swap** protocol. Provide 
 ```Solidity
 function cancel(uint256[] memory ids) public
 ```
+
+## Sources
+
+| File | Functions |
+| :--- | :--- |
+| `contracts` / `AtomicSwap.sol` | `swap` `purchase` `cancel` |
+| `contracts` / `lib` / `Transferable.sol` | `send` `transferAny` `safeTransferAny` |
+| `contracts` / `lib` / `Authorizable.sol` | `authorize` `revoke` `isAuthorized` |
+| `contracts` / `lib` / `Verifiable.sol` | `isValid` `isValidSimple` |
+
+## Tools
+
+Contracts written in [solidity 0.5.8](https://solidity.readthedocs.io/en/v0.5.7/) and tests written in [Mocha / Chai](https://truffleframework.com/docs/truffle/testing/writing-tests-in-javascript) with JavaScript.
+
+| Command | Description |
+| :--- | :--- |
+| `yarn test` | Run the tests found in `/test`. |
+| `yarn coverage` | Run a test coverage report. [Forked](https://github.com/dmosites/solidity-coverage) to support `address payable` syntax. |
+| `yarn solhint` | Run a syntax linter for the Solidity code. |
+| `yarn eslint` | Run a syntax linter for the JavaScript code. |
