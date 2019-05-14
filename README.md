@@ -211,7 +211,7 @@ function cancel(uint256[] memory ids) public
 Peers may authorize other peers to make (sign) or take (send) Orders on their behalf. This is useful for delegating authorization to a trusted third party, whether a user account or smart contract. An authorization works for both sides of a Swap, regardless of whether the delegate signing or sending on ones behalf.
 
 ### Authorize
-Authorize a delegate account or contract to make or take Orders on the sender's behalf. **Not** available for **Swap (Light)** or **Purchase**.
+Authorize a delegate account or contract to make or take Orders on the sender's behalf. **Not** available for **Swap (Light)**.
 ```Solidity
 function authorize(address delegate, uint256 expiry) external returns (bool)
 ```
@@ -327,7 +327,7 @@ return {
 
 | File | Location | Contents |
 | :--- | :--- | :--- |
-| `AtomicSwap.sol` | `contracts` | Functions `swap` `purchase` `cancel` |
+| `AtomicSwap.sol` | `contracts` | Functions `swap` `cancel` |
 | `Transferable.sol` | `contracts/lib` | Functions `send` `transferAny` `safeTransferAny` |
 | `Authorizable.sol` | `contracts/lib` | Functions `authorize` `revoke` `isAuthorized` |
 | `Verifiable.sol` | `contracts/lib` | Functions `isValid` `isValidSimple` |

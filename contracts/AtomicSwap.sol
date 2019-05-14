@@ -7,7 +7,7 @@ import "./lib/Verifiable.sol";
 
 
 /**
-* @title Atomic swap contract used by the Swap Protocol.
+* @title Atomic swap contract used by the Swap Protocol
 */
 contract AtomicSwap is Authorizable, Transferable, Verifiable {
 
@@ -15,10 +15,10 @@ contract AtomicSwap is Authorizable, Transferable, Verifiable {
   byte constant private TAKEN = 0x01;
   byte constant private CANCELED = 0x02;
 
-  // Maps makers to orders by ID as TAKEN (0x01) or CANCELED (0x02).
+  // Maps makers to orders by ID as TAKEN (0x01) or CANCELED (0x02)
   mapping (address => mapping (uint256 => byte)) public makerOrderStatus;
 
-  // Emitted on Swap.
+  // Emitted on Swap
   event Swap(
     uint256 indexed id,
     address indexed makerAddress,
@@ -32,7 +32,7 @@ contract AtomicSwap is Authorizable, Transferable, Verifiable {
     address affiliateToken
   );
 
-  // Emitted on Cancel.
+  // Emitted on Cancel
   event Cancel(
     uint256 indexed id,
     address indexed makerAddress
@@ -52,65 +52,72 @@ contract AtomicSwap is Authorizable, Transferable, Verifiable {
     external payable
   {
 
+    // Ensure the order signer is authorized
     require(isAuthorized(order.maker.wallet, signature.signer),
       "SIGNER_UNAUTHORIZED");
 
+    // Ensure the order signature is valid
     require(isValid(order, signature),
       "SIGNATURE_INVALID");
 
-    // Ensure the order has not been swapped.
+    // Ensure the order has not already been taken
     require(makerOrderStatus[order.maker.wallet][order.id] != TAKEN,
       "ORDER_ALREADY_TAKEN");
 
-    // Ensure the order has not been canceled.
+    // Ensure the order has not already been canceled
     require(makerOrderStatus[order.maker.wallet][order.id] != CANCELED,
       "ORDER_ALREADY_CANCELED");
 
-    // Ensure the order has not expired.
+    // Ensure the order is not expired
     require(order.expiry > block.timestamp,
       "ORDER_EXPIRED");
 
-    // Check that a specified sender is the actual sender.
+    // Ensure the order sender is authorized
     if (msg.sender != order.taker.wallet) {
       require(isAuthorized(order.taker.wallet, msg.sender),
         "SENDER_UNAUTHORIZED");
     }
 
-    // Mark the order as taken (0x01).
+    // Mark the order taken (0x01)
     makerOrderStatus[order.maker.wallet][order.id] = TAKEN;
 
-    // If the takerToken is null, expect that this is an order for ether.
+    // A null taker token is an order for ether
     if (order.taker.token == address(0)) {
 
-      // The amount of ether sent must match the taker param.
+      // Ensure the ether sent matches the taker param
       require(msg.value == order.taker.param,
         "VALUE_MUST_BE_SENT");
 
-      // Send the ether amount to the maker.
+      // Transfer ether from taker to maker
       send(order.maker.wallet, msg.value);
-
-      // Transfer the maker side of the trade to the taker.
-      safeTransferAny(
-        "MAKER",
-        order.maker.wallet,
-        order.taker.wallet,
-        order.maker.param,
-        order.maker.token
-      );
 
     } else {
 
-      // The amount of ether sent must be zero.
+      // Ensure the value sent is zero
       require(msg.value == 0,
         "VALUE_MUST_BE_ZERO");
 
-      // Perform the swap between maker and taker.
-      safeTransferAny("MAKER", order.maker.wallet, order.taker.wallet, order.maker.param, order.maker.token);
-      safeTransferAny("TAKER", order.taker.wallet, order.maker.wallet, order.taker.param, order.taker.token);
+      // Transfer token from taker to maker
+      safeTransferAny(
+        "TAKER",
+        order.taker.wallet,
+        order.maker.wallet,
+        order.taker.param,
+        order.taker.token
+      );
 
     }
 
-    // Transfer a specified fee to an affiliate.
+    // Transfer token from maker to taker
+    safeTransferAny(
+      "MAKER",
+      order.maker.wallet,
+      order.taker.wallet,
+      order.maker.param,
+      order.maker.token
+    );
+
+    // Transfer token from maker to affiliate if specified
     if (order.affiliate.wallet != address(0)) {
       safeTransferAny(
         "MAKER",
@@ -121,7 +128,8 @@ contract AtomicSwap is Authorizable, Transferable, Verifiable {
       );
     }
 
-    emit Swap(order.id, order.maker.wallet, order.maker.param, order.maker.token,
+    emit Swap(order.id,
+      order.maker.wallet, order.maker.param, order.maker.token,
       order.taker.wallet, order.taker.param, order.taker.token,
       order.affiliate.wallet, order.affiliate.param, order.affiliate.token
     );
@@ -159,12 +167,15 @@ contract AtomicSwap is Authorizable, Transferable, Verifiable {
     external payable
   {
 
+    // Ensure the order is not expired
     require(expiry > block.timestamp,
       "ORDER_EXPIRED");
 
+    // Ensure the order has not already been taken or canceled
     require(makerOrderStatus[makerWallet][id] == OPEN,
       "ORDER_UNAVAILABLE");
 
+    // Ensure the order signature is valid
     require(isValidSimple(
       id,
       makerWallet,
@@ -177,30 +188,31 @@ contract AtomicSwap is Authorizable, Transferable, Verifiable {
       r, s, v
     ), "SIGNATURE_INVALID");
 
-    // Mark the order as taken (0x01).
+    // Mark the order taken (0x01).
     makerOrderStatus[makerWallet][id] = TAKEN;
 
+    // A null taker token is an order for ether
     if (takerToken == address(0)) {
 
-      // The amount of ether sent must match the taker param.
+      // Ensure the ether sent matches the taker param
       require(msg.value == takerParam,
-        "VALUE_INCORRECT");
+        "VALUE_MUST_BE_SENT");
 
-      // Send the ether amount to the maker.
+      // Transfer ether from taker to maker
       send(makerWallet, msg.value);
 
     } else {
 
-      // The amount of ether sent must be zero.
+      // Ensure the value sent is zero
       require(msg.value == 0,
         "VALUE_MUST_BE_ZERO");
 
-      // Transfer the taker side of the swap.
+      // Transfer token from taker to maker
       transferAny(takerToken, takerWallet, makerWallet, takerParam);
 
     }
 
-    // Transfer the maker side of the swap.
+    // Transfer token from maker to taker
     transferAny(makerToken, makerWallet, takerWallet, makerParam);
 
     emit Swap(id,
