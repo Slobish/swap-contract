@@ -1,4 +1,4 @@
-pragma solidity 0.5.7;
+pragma solidity 0.5.8;
 
 
 contract Authorizable {
@@ -18,7 +18,8 @@ contract Authorizable {
   );
 
   function authorize(address delegate, uint256 expiry) external returns (bool) {
-    require(expiry > block.timestamp, "INVALID_EXPIRY");
+    require(msg.sender != delegate, "INVALID_AUTH_DELEGATE");
+    require(expiry > block.timestamp, "INVALID_AUTH_EXPIRY");
     approvals[msg.sender][delegate] = expiry;
     emit Authorization(msg.sender, delegate, expiry);
     return true;

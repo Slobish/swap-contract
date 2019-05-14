@@ -11,7 +11,7 @@ module.exports = {
   setVerifyingContract(verifyingContract) {
     this._verifyingContract = verifyingContract
   },
-  generateNonce() {
+  generateId() {
     return Math.round(Math.random() * 10000)
   },
   generateExpiry() {
@@ -19,7 +19,7 @@ module.exports = {
   },
   async getOrder({
     expiry = this.generateExpiry(),
-    id = this.generateNonce(),
+    id = this.generateId(),
     signer = NULL_ADDRESS,
     maker = defaults.Party,
     taker = defaults.Party,

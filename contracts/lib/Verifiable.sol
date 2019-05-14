@@ -1,4 +1,4 @@
-pragma solidity 0.5.7;
+pragma solidity 0.5.8;
 pragma experimental ABIEncoderV2;
 
 
@@ -96,6 +96,13 @@ contract Verifiable {
     ));
   }
 
+  /**
+    * @notice Validates signature using an EIP-712 typed data hash.
+    *
+    * @param order Order
+    * @param signature Signature
+    * @param signer address
+    */
   function isValid(Order memory order, Signature memory signature, address signer) internal view returns (bool) {
     if (signature.version == byte(0x01)) {
       return signer == ecrecover(
@@ -112,27 +119,43 @@ contract Verifiable {
     return false;
   }
 
-  function isValidLegacy(
+  /**
+    * @notice Validates signature using a simple hash and verifyingContract.
+    * @dev Determines type (ERC-20 or ERC-721) with ERC-165
+    *
+    * @param id uint256
+    * @param makerWallet address
+    * @param makerParam uint256
+    * @param makerToken address
+    * @param takerWallet address
+    * @param takerParam uint256
+    * @param takerToken address
+    * @param expiry uint256
+    * @param r bytes32
+    * @param s bytes32
+    * @param v uint8
+    */
+  function isValidSimple(uint256 id,
     address makerWallet, uint256 makerParam, address makerToken,
     address takerWallet, uint256 takerParam, address takerToken,
-    uint256 expiry, uint256 id, uint8 v, bytes32 r, bytes32 s
+    uint256 expiry, bytes32 r, bytes32 s, uint8 v
     ) internal view returns (bool) {
-      return makerWallet == ecrecover(
+    return makerWallet == ecrecover(
+      keccak256(abi.encodePacked(
+        "\x19Ethereum Signed Message:\n32",
         keccak256(abi.encodePacked(
-          "\x19Ethereum Signed Message:\n32",
-          keccak256(abi.encodePacked(
-            byte(0),
-            this,
-            makerWallet,
-            makerParam,
-            makerToken,
-            takerWallet,
-            takerParam,
-            takerToken,
-            expiry,
-            id
-          )))),
-        v, r, s);
+          byte(0),
+          this,
+          id,
+          makerWallet,
+          makerParam,
+          makerToken,
+          takerWallet,
+          takerParam,
+          takerToken,
+          expiry
+        )))),
+      v, r, s);
   }
 
 }

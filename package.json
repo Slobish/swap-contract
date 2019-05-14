@@ -1,6 +1,7 @@
 {
   "name": "swap-protocol",
   "version": "2.0.0",
+  "license": "MIT",
   "scripts": {
     "compile": "yarn truffle compile",
     "coverage": "yarn solidity-coverage",
@@ -13,6 +14,7 @@
     "babel-eslint": "^10.0.1",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.16.0",
+    "eth-gas-reporter": "^0.1.12",
     "eth-sig-util": "^2.1.1",
     "ethereumjs-abi": "^0.6.6",
     "ethereumjs-util": "^6.0.0",
@@ -25,7 +27,6 @@
     "truffle-security": "^1.0.0"
   },
   "dependencies": {
-    "eth-gas-reporter": "^0.1.12",
     "openzeppelin-solidity": "^2.2.0"
   }
 }

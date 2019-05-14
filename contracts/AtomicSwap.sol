@@ -1,4 +1,4 @@
-pragma solidity 0.5.7;
+pragma solidity 0.5.8;
 pragma experimental ABIEncoderV2;
 
 import "./lib/Authorizable.sol";
@@ -7,15 +7,15 @@ import "./lib/Verifiable.sol";
 
 
 /**
-* @title Swap Protocol
+* @title Atomic swap contract used by the Swap Protocol.
 */
-contract Swap is Authorizable, Transferable, Verifiable {
+contract AtomicSwap is Authorizable, Transferable, Verifiable {
 
   byte constant private OPEN = 0x00;
-  byte constant private COMPLETED = 0x01;
+  byte constant private TAKEN = 0x01;
   byte constant private CANCELED = 0x02;
 
-  // Maps makers to orders by ID as completed (0x01) or canceled (0x02).
+  // Maps makers to orders by ID as TAKEN (0x01) or CANCELED (0x02).
   mapping (address => mapping (uint256 => byte)) public makerOrderStatus;
 
   // Event emitted on swap.
@@ -39,30 +39,29 @@ contract Swap is Authorizable, Transferable, Verifiable {
   );
 
   /**
-    * @notice Execute an atomic token purchase for ETH
-    * @dev Determines type (ERC-20 or ERC-721) using ERC-165
+    * @notice Atomic Token Purchase
+    * @dev Determines type (ERC-20 or ERC-721) with ERC-165
     *
-    * @param sellerWallet address
-    * @param sellerParam uint256
-    * @param sellerToken address
-    * @param totalPrice uint256
-    * @param expiry uint256
     * @param id uint256
-    * @param v uint8
+    * @param makerWallet address
+    * @param makerParam uint256
+    * @param makerToken address
+    * @param totalCost uint256
+    * @param expiry uint256
     * @param r bytes32
     * @param s bytes32
-    *
+    * @param v uint8
     */
   function purchase(
-    address sellerWallet,
-    uint256 sellerParam,
-    address sellerToken,
-    uint256 totalPrice,
-    uint256 expiry,
     uint256 id,
-    uint8 v,
+    address makerWallet,
+    uint256 makerParam,
+    address makerToken,
+    uint256 totalCost,
+    uint256 expiry,
     bytes32 r,
-    bytes32 s
+    bytes32 s,
+    uint8 v
   )
     external payable
   {
@@ -70,39 +69,40 @@ contract Swap is Authorizable, Transferable, Verifiable {
     require(expiry > block.timestamp,
       "ORDER_EXPIRED");
 
-    require(makerOrderStatus[sellerWallet][id] == OPEN,
+    require(makerOrderStatus[makerWallet][id] == OPEN,
       "ORDER_UNAVAILABLE");
 
-    require(msg.value == totalPrice,
-      "AMOUNT_INCORRECT");
+    require(msg.value == totalCost,
+      "VALUE_INCORRECT");
 
-    require(isValidLegacy(
-      sellerWallet,
-      sellerParam,
-      sellerToken,
+    require(isValidSimple(id,
+      makerWallet,
+      makerParam,
+      makerToken,
       msg.sender,
-      totalPrice,
+      totalCost,
       address(0),
       expiry,
-      id, v, r, s
+      r, s, v
     ), "SIGNATURE_INVALID");
 
-    makerOrderStatus[sellerWallet][id] = COMPLETED;
+    makerOrderStatus[makerWallet][id] = TAKEN;
 
-    send(sellerWallet, totalPrice);
-    transferAny(sellerToken, sellerWallet, msg.sender, sellerParam);
+    transferAny(makerToken, makerWallet, msg.sender, makerParam);
+    send(makerWallet, totalCost);
 
-    emit Swap(id, sellerWallet, sellerParam, sellerToken,
-      msg.sender, totalPrice, address(0),
+    emit Swap(id, makerWallet, makerParam, makerToken,
+      msg.sender, totalCost, address(0),
       address(0), 0, address(0)
     );
 
   }
 
   /**
-    * @notice Execute an atomic token swap (V1)
-    * @dev Determines type (ERC-20 or ERC-721) using ERC-165
+    * @notice Atomic Token Swap (Light)
+    * @dev Determines type (ERC-20 or ERC-721) with ERC-165
     *
+    * @param id uint256
     * @param makerWallet address
     * @param makerParam uint256
     * @param makerToken address
@@ -110,13 +110,12 @@ contract Swap is Authorizable, Transferable, Verifiable {
     * @param takerParam uint256
     * @param takerToken address
     * @param expiry uint256
-    * @param id uint256
-    * @param v uint8
     * @param r bytes32
     * @param s bytes32
-    *
+    * @param v uint8
     */
   function swap(
+    uint256 id,
     address makerWallet,
     uint256 makerParam,
     address makerToken,
@@ -124,10 +123,9 @@ contract Swap is Authorizable, Transferable, Verifiable {
     uint256 takerParam,
     address takerToken,
     uint256 expiry,
-    uint256 id,
-    uint8 v,
     bytes32 r,
-    bytes32 s
+    bytes32 s,
+    uint8 v
   )
     external
   {
@@ -138,7 +136,8 @@ contract Swap is Authorizable, Transferable, Verifiable {
     require(makerOrderStatus[makerWallet][id] == OPEN,
       "ORDER_UNAVAILABLE");
 
-    require(isValidLegacy(
+    require(isValidSimple(
+      id,
       makerWallet,
       makerParam,
       makerToken,
@@ -146,15 +145,16 @@ contract Swap is Authorizable, Transferable, Verifiable {
       takerParam,
       takerToken,
       expiry,
-      id, v, r, s
+      r, s, v
     ), "SIGNATURE_INVALID");
 
-    makerOrderStatus[makerWallet][id] = COMPLETED;
+    makerOrderStatus[makerWallet][id] = TAKEN;
 
     transferAny(makerToken, makerWallet, takerWallet, makerParam);
     transferAny(takerToken, takerWallet, makerWallet, takerParam);
 
-    emit Swap(id, makerWallet, makerParam, makerToken,
+    emit Swap(id,
+      makerWallet, makerParam, makerToken,
       takerWallet, takerParam, takerToken,
       address(0), 0, address(0)
     );
@@ -162,13 +162,20 @@ contract Swap is Authorizable, Transferable, Verifiable {
   }
 
   /**
-    * @notice Execute an atomic token swap (V2)
-    * @dev Determines type (ERC-20 or ERC-721) using ERC-165
+    * @notice Atomic Token Swap (Full)
+    * @dev Determines type (ERC-20 or ERC-721) with ERC-165
     *
     * @param order Order
     * @param signature Signature
+    * @param signer address
     */
-  function swap(Order calldata order, Signature calldata signature, address signer) external payable {
+  function swap(
+    Order calldata order,
+    Signature calldata signature,
+    address signer
+  )
+    external payable
+  {
 
     require(isAuthorized(order.maker.wallet, signer),
       "SIGNER_UNAUTHORIZED");
@@ -177,8 +184,8 @@ contract Swap is Authorizable, Transferable, Verifiable {
       "SIGNATURE_INVALID");
 
     // Ensure the order has not been swapped.
-    require(makerOrderStatus[order.maker.wallet][order.id] != COMPLETED,
-      "ORDER_ALREADY_FILLED");
+    require(makerOrderStatus[order.maker.wallet][order.id] != TAKEN,
+      "ORDER_ALREADY_TAKEN");
 
     // Ensure the order has not been canceled.
     require(makerOrderStatus[order.maker.wallet][order.id] != CANCELED,
@@ -195,7 +202,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
     }
 
     // Mark the id as swaped (0x01).
-    makerOrderStatus[order.maker.wallet][order.id] = COMPLETED;
+    makerOrderStatus[order.maker.wallet][order.id] = TAKEN;
 
     // If the takerToken is null, expect that this is an order for ether.
     if (order.taker.token == address(0)) {
@@ -208,7 +215,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
       send(order.maker.wallet, msg.value);
 
       // Transfer the maker side of the trade to the taker.
-      transferSafe(
+      safeTransferAny(
         "MAKER",
         order.maker.wallet,
         order.taker.wallet,
@@ -223,20 +230,14 @@ contract Swap is Authorizable, Transferable, Verifiable {
           "VALUE_MUST_BE_ZERO");
 
       // Perform the swap between maker and taker.
-      swap(
-        order.maker.wallet,
-        order.maker.param,
-        order.maker.token,
-        order.taker.wallet,
-        order.taker.param,
-        order.taker.token
-      );
+      safeTransferAny("MAKER", order.maker.wallet, order.taker.wallet, order.maker.param, order.maker.token);
+      safeTransferAny("TAKER", order.taker.wallet, order.maker.wallet, order.taker.param, order.taker.token);
 
     }
 
     // Transfer a specified fee to an affiliate.
     if (order.affiliate.wallet != address(0)) {
-      transferSafe(
+      safeTransferAny(
         "MAKER",
         order.maker.wallet,
         order.affiliate.wallet,
