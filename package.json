@@ -5,26 +5,24 @@
   "scripts": {
     "compile": "yarn truffle compile",
     "coverage": "yarn solidity-coverage",
-    "eslint": "yarn eslint \"./test/**/*.js\"",
+    "eslint": "yarn eslint \"./tests/**/*.js\"",
     "migrate": "yarn truffle migrate",
     "solhint": "yarn solhint \"./contracts/**/*.sol\"",
-    "test": "yarn truffle test"
+    "test": "yarn truffle test \"./tests/Swap.js\""
   },
   "devDependencies": {
     "babel-eslint": "^10.0.1",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.16.0",
-    "eth-gas-reporter": "^0.1.12",
     "eth-sig-util": "^2.1.1",
     "ethereumjs-abi": "^0.6.6",
     "ethereumjs-util": "^6.0.0",
     "ethers": "^4.0.23",
     "ganache-cli": "^6.3.0",
     "solhint": "^1.5.1",
-    "solidity-coverage": "git://github.com/dmosites/solidity-coverage.git",
-    "truffle": "^5.0.4",
-    "truffle-assertions": "^0.7.2",
-    "truffle-security": "^1.0.0"
+    "solidity-coverage": "https://github.com/leapdao/solidity-coverage#master",
+    "truffle": "^5.0.17",
+    "truffle-assertions": "^0.9.0"
   },
   "dependencies": {
     "openzeppelin-solidity": "^2.2.0"

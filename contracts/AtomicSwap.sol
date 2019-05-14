@@ -39,148 +39,23 @@ contract AtomicSwap is Authorizable, Transferable, Verifiable {
   );
 
   /**
-    * @notice Atomic Token Purchase
-    * @dev Determines type (ERC-20 or ERC-721) with ERC-165
-    *
-    * @param id uint256
-    * @param makerWallet address
-    * @param makerParam uint256
-    * @param makerToken address
-    * @param totalCost uint256
-    * @param expiry uint256
-    * @param r bytes32
-    * @param s bytes32
-    * @param v uint8
-    */
-  function purchase(
-    uint256 id,
-    address makerWallet,
-    uint256 makerParam,
-    address makerToken,
-    uint256 totalCost,
-    uint256 expiry,
-    bytes32 r,
-    bytes32 s,
-    uint8 v
-  )
-    external payable
-  {
-
-    require(expiry > block.timestamp,
-      "ORDER_EXPIRED");
-
-    require(makerOrderStatus[makerWallet][id] == OPEN,
-      "ORDER_UNAVAILABLE");
-
-    require(msg.value == totalCost,
-      "VALUE_INCORRECT");
-
-    require(isValidSimple(id,
-      makerWallet,
-      makerParam,
-      makerToken,
-      msg.sender,
-      totalCost,
-      address(0),
-      expiry,
-      r, s, v
-    ), "SIGNATURE_INVALID");
-
-    makerOrderStatus[makerWallet][id] = TAKEN;
-
-    transferAny(makerToken, makerWallet, msg.sender, makerParam);
-    send(makerWallet, totalCost);
-
-    emit Swap(id, makerWallet, makerParam, makerToken,
-      msg.sender, totalCost, address(0),
-      address(0), 0, address(0)
-    );
-
-  }
-
-  /**
-    * @notice Atomic Token Swap (Light)
-    * @dev Determines type (ERC-20 or ERC-721) with ERC-165
-    *
-    * @param id uint256
-    * @param makerWallet address
-    * @param makerParam uint256
-    * @param makerToken address
-    * @param takerWallet address
-    * @param takerParam uint256
-    * @param takerToken address
-    * @param expiry uint256
-    * @param r bytes32
-    * @param s bytes32
-    * @param v uint8
-    */
-  function swap(
-    uint256 id,
-    address makerWallet,
-    uint256 makerParam,
-    address makerToken,
-    address takerWallet,
-    uint256 takerParam,
-    address takerToken,
-    uint256 expiry,
-    bytes32 r,
-    bytes32 s,
-    uint8 v
-  )
-    external
-  {
-
-    require(expiry > block.timestamp,
-      "ORDER_EXPIRED");
-
-    require(makerOrderStatus[makerWallet][id] == OPEN,
-      "ORDER_UNAVAILABLE");
-
-    require(isValidSimple(
-      id,
-      makerWallet,
-      makerParam,
-      makerToken,
-      takerWallet,
-      takerParam,
-      takerToken,
-      expiry,
-      r, s, v
-    ), "SIGNATURE_INVALID");
-
-    makerOrderStatus[makerWallet][id] = TAKEN;
-
-    transferAny(makerToken, makerWallet, takerWallet, makerParam);
-    transferAny(takerToken, takerWallet, makerWallet, takerParam);
-
-    emit Swap(id,
-      makerWallet, makerParam, makerToken,
-      takerWallet, takerParam, takerToken,
-      address(0), 0, address(0)
-    );
-
-  }
-
-  /**
-    * @notice Atomic Token Swap (Full)
+    * @notice Atomic Token Swap
     * @dev Determines type (ERC-20 or ERC-721) with ERC-165
     *
     * @param order Order
     * @param signature Signature
-    * @param signer address
     */
   function swap(
     Order calldata order,
-    Signature calldata signature,
-    address signer
+    Signature calldata signature
   )
     external payable
   {
 
-    require(isAuthorized(order.maker.wallet, signer),
+    require(isAuthorized(order.maker.wallet, signature.signer),
       "SIGNER_UNAUTHORIZED");
 
-    require(isValid(order, signature, signer),
+    require(isValid(order, signature),
       "SIGNATURE_INVALID");
 
     // Ensure the order has not been swapped.
@@ -250,6 +125,129 @@ contract AtomicSwap is Authorizable, Transferable, Verifiable {
       order.taker.wallet, order.taker.param, order.taker.token,
       order.affiliate.wallet, order.affiliate.param, order.affiliate.token
     );
+  }
+
+  /**
+    * @notice Atomic Token Swap (Light)
+    * @dev Determines type (ERC-20 or ERC-721) with ERC-165
+    *
+    * @param id uint256
+    * @param makerWallet address
+    * @param makerParam uint256
+    * @param makerToken address
+    * @param takerWallet address
+    * @param takerParam uint256
+    * @param takerToken address
+    * @param expiry uint256
+    * @param r bytes32
+    * @param s bytes32
+    * @param v uint8
+    */
+  function swap(
+    uint256 id,
+    address makerWallet,
+    uint256 makerParam,
+    address makerToken,
+    address takerWallet,
+    uint256 takerParam,
+    address takerToken,
+    uint256 expiry,
+    bytes32 r,
+    bytes32 s,
+    uint8 v
+  )
+    external
+  {
+
+    require(expiry > block.timestamp,
+      "ORDER_EXPIRED");
+
+    require(makerOrderStatus[makerWallet][id] == OPEN,
+      "ORDER_UNAVAILABLE");
+
+    require(isValidSimple(
+      id,
+      makerWallet,
+      makerParam,
+      makerToken,
+      takerWallet,
+      takerParam,
+      takerToken,
+      expiry,
+      r, s, v
+    ), "SIGNATURE_INVALID");
+
+    makerOrderStatus[makerWallet][id] = TAKEN;
+
+    transferAny(makerToken, makerWallet, takerWallet, makerParam);
+    transferAny(takerToken, takerWallet, makerWallet, takerParam);
+
+    emit Swap(id,
+      makerWallet, makerParam, makerToken,
+      takerWallet, takerParam, takerToken,
+      address(0), 0, address(0)
+    );
+
+  }
+
+  /**
+    * @notice Atomic Token Purchase
+    * @dev Determines type (ERC-20 or ERC-721) with ERC-165
+    *
+    * @param id uint256
+    * @param makerWallet address
+    * @param makerParam uint256
+    * @param makerToken address
+    * @param totalCost uint256
+    * @param expiry uint256
+    * @param r bytes32
+    * @param s bytes32
+    * @param v uint8
+    */
+  function purchase(
+    uint256 id,
+    address makerWallet,
+    uint256 makerParam,
+    address makerToken,
+    uint256 totalCost,
+    uint256 expiry,
+    bytes32 r,
+    bytes32 s,
+    uint8 v
+  )
+    external payable
+  {
+
+    require(expiry > block.timestamp,
+      "ORDER_EXPIRED");
+
+    require(makerOrderStatus[makerWallet][id] == OPEN,
+      "ORDER_UNAVAILABLE");
+
+    require(msg.value == totalCost,
+      "VALUE_INCORRECT");
+
+    require(isValidSimple(id,
+      makerWallet,
+      makerParam,
+      makerToken,
+      msg.sender,
+      totalCost,
+      address(0),
+      expiry,
+      r, s, v
+    ), "SIGNATURE_INVALID");
+
+    makerOrderStatus[makerWallet][id] = TAKEN;
+
+    transferAny(makerToken, makerWallet, msg.sender, makerParam);
+    send(makerWallet, totalCost);
+
+    emit Swap(id, makerWallet, makerParam, makerToken,
+      msg.sender, totalCost, address(0),
+      address(0), 0, address(0)
+    );
+
   }
 
   /**   @notice Cancel a batch of orders.

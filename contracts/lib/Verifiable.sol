@@ -22,7 +22,6 @@ contract Verifiable {
     Party maker;
     Party taker;
     Party affiliate;
-    address signer;
   }
 
   struct Signature {
@@ -30,6 +29,7 @@ contract Verifiable {
     bytes32 r;
     bytes32 s;
     bytes1 version;
+    address signer;
   }
 
   bytes32 internal constant DOMAIN_TYPEHASH = keccak256(abi.encodePacked(
@@ -101,17 +101,16 @@ contract Verifiable {
     *
     * @param order Order
     * @param signature Signature
-    * @param signer address
     */
-  function isValid(Order memory order, Signature memory signature, address signer) internal view returns (bool) {
+  function isValid(Order memory order, Signature memory signature) internal view returns (bool) {
     if (signature.version == byte(0x01)) {
-      return signer == ecrecover(
+      return signature.signer == ecrecover(
           hashOrder(order),
           signature.v, signature.r, signature.s
       );
     }
     if (signature.version == byte(0x45)) {
-      return signer == ecrecover(
+      return signature.signer == ecrecover(
           keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hashOrder(order))),
           signature.v, signature.r, signature.s
       );

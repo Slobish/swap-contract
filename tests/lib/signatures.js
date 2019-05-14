@@ -11,6 +11,7 @@ module.exports = {
     const { v, r, s } = ethUtil.fromRpcSig(sig)
     return {
       version: '0x45', // Version 0x45: personal_sign
+      signer,
       v,
       r,
       s,
@@ -22,6 +23,7 @@ module.exports = {
     const { r, s, v } = ethUtil.ecsign(orderHashBuff, privateKey)
     return {
       version: '0x01', // Version 0x01: signTypedData
+      signer: ethUtil.privateToAddress(privateKey).toString('hex'),
       v,
       r,
       s,
@@ -43,12 +45,13 @@ module.exports = {
     const { v, r, s } = ethUtil.fromRpcSig(sig)
     return {
       version: '0x01', // Version 0x01: signTypedData
+      signer: ethUtil.privateToAddress(privateKey).toString('hex'),
       v,
       r,
       s,
     }
   },
-  async getLegacySignature(order, signer, verifyingContract) {
+  async getSimpleSignature(order, signer, verifyingContract) {
     const msg = web3.utils.soliditySha3(
       // Version 0x00: Data with intended validator (verifyingContract)
       { type: 'bytes1', value: '0x0' },

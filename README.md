@@ -9,23 +9,49 @@ $ cd swap-protocol
 $ yarn
 $ yarn coverage
 ```
+## Table of Contents
+
+* [Highlights](#highlights)
+* [Definitions](#definitions)
+* [Swap](#swap)
+  * [Arguments](#arguments)
+  * [Order](#order)
+  * [Party](#party)
+  * [Signature](#signature)
+  * [Reverts](#revert-cases)
+* [Swap (Light)](#light-swap)
+  * [Arguments](#arguments)
+  * [Reverts](#revert-cases)
+* [Purchase](#purchase)
+  * [Arguments](#arguments)
+  * [Reverts](#revert-cases)
+* [Cancel](#cancel)
+* [Authorizations](#authorize)
+  * [Authorize](#authorize)
+  * [Revoke](#revoke)
+* [Signatures](#signatures)
+  * [Simple](#simple)
+  * [Typed Data](#typed-data)
+* [Sources](#sources)
+* [Tooling](#tooling)
+
 
 ## Highlights
 
 ### Atomic Swap
-Transact directly peer-to-peer.
+Transact directly peer-to-peer on Ethereum.
 
 ### Fungible and Non-Fungible
-Swap between any two digital assets.
+Swap between any two ERC20 or ERC721 assets.
 
 ### Typed Data Signatures
-Sign informative messages to improve usability.
+Sign informative messages for improved transparency.
 
 ### Delegate Authorization
 Authorize peers to act on behalf of others.
 
 ### Affiliate Fees
-Compensate those who connect peers.
+Compensate those who connect peers that trade.
 
 ### Batch Cancels
 Cancel multiple orders in a single transaction.
@@ -34,92 +60,17 @@ Cancel multiple orders in a single transaction.
 
 | Term | Definition |
 | :--- | :--- |
-| Atomic Swap | A two-way token transfer that either succeeds for both sides or fails. |
-| Order | A set of parameters that specify the parties and tokens of an atomic swap. |
-| Maker | A party that sets and signs the parameters of an Order. |
-| Taker | A party that submits an Order as an Ethereum transaction for execution. |
-| Affiliate | An *optional* party compensated by the Maker for facilitating a trade. |
+| Swap | A transaction of multiple Token transfers that succeeds for all parties or fails. |
+| Token | A fungible (ERC-20) or non-fungible (ERC-721) Ethereum asset to be transferred. |
+| Maker | A party that sets and signs the parameters and price of an Order. |
+| Taker | A party that accepts the parameters of an Order and settles it on Ethereum. |
+| Affiliate | An *optional* party compensated by the Maker for facilitating a Swap. |
 | Delegate | An *optional* party authorized to make or take orders on behalf of another party. |
-| Token | A fungible (ERC-20) or non-fungible (ERC-721) Ethereum asset to be traded. |
+| Order | A specification of the tokens, amounts, and parties to a Swap. |
+| ID | A parameter of every Order that is unique to its Maker. |
 
-## Purchase
-
-Light weight purchase of a token for ether.
-```Solidity
-function purchase(
-  uint256 id,
-  address makerWallet,
-  uint256 makerParam,
-  address makerToken,
-  uint256 totalCost,
-  uint256 expiry,
-  bytes32 r,
-  bytes32 s,
-  uint8 v
-) external payable
-```
-
-| Argument | Type | Optionality | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | `uint256` | Required | A unique identifier for the order. |
-| `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
-| `makerWallet` | `Party` | Required | The maker of the order who sets price. |
-| `makerParam` | `uint256` | Required | The expiry in seconds since unix epoch. |
-| `makerToken` | `address` | Required | A unique identifier for the order. |
-| `totalCost` | `uint256` | Required | A unique identifier for the order. |
-| `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
-| `r` | `bytes32` | Required | A unique identifier for the order. |
-| `s` | `bytes32` | Required | A unique identifier for the order. |
-| `v` | `uint8` | Required | The expiry in seconds since unix epoch. |
-
-### Errors
-| Reason | Scenario |
-| :--- | :--- |
-| `ORDER_EXPIRED` | Order has an `expiry` lower than the current block time. |
-| `ORDER_UNAVAILABLE` | Order has already been taken by its `id` value. |
-| `SIGNATURE_INVALID` | Order has been signed by the maker but the signature is incorrect. |
-| `VALUE_INCORRECT` | Value of the transaction (ether) does not match the cost of the purchase. |
-
-## Light Swap
-Swap between tokens (ERC-20 or ERC-721) using legacy signatures.
-
-```Solidity
-function swap(
-  uint256 id,
-  address makerWallet,
-  uint256 makerParam,
-  address makerToken,
-  address takerWallet,
-  uint256 takerParam,
-  address takerToken,
-  uint256 expiry,
-  bytes32 r,
-  bytes32 s,
-  uint8 v
-) external
-```
-
-| Argument | Type | Optionality | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | `uint256` | Required | A unique identifier for the order. |
-| `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
-| `makerWallet` | `address` | Required | A unique identifier for the order. |
-| `makerParam` | `uint256` | Required | The expiry in seconds since unix epoch. |
-| `makerToken` | `address` | Required | A unique identifier for the order. |
-| `totalCost` | `uint256` | Required | A unique identifier for the order. |
-| `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
-| `r` | `bytes32` | Required | A unique identifier for the order. |
-| `s` | `bytes32` | Required | A unique identifier for the order. |
-| `v` | `uint8` | Required | The expiry in seconds since unix epoch. |
-
-| Error Reason | Scenario |
-| :--- | :--- |
-| `ORDER_EXPIRED` | Order has an `expiry` lower than the current block time. |
-| `ORDER_UNAVAILABLE` | Order has already been taken by its `id` value. |
-| `SIGNATURE_INVALID` | Order has been signed by the maker but the signature is incorrect. |
-
-## Full Swap
-Swap between tokens (ERC-20 or ERC-721) or ether, full features, using typed data signatures.
+## Swap
+Swap between tokens (ERC-20 or ERC-721) or ETH with all features using typed data signatures.
 
 ```Solidity
 function swap(
@@ -129,28 +80,15 @@ function swap(
 ) external payable
 ```
 
-| Argument | Type | Optionality | Description |
+### Arguments
+
+| Name | Type | Optionality | Description |
 | :--- | :--- | :--- | :--- |
 | `order` | `Order` | Required | A unique identifier for the order. |
 | `signature` | `Signature` | Required | The expiry in seconds since unix epoch. |
 | `signer` | `address` | Required | A unique identifier for the order. |
 
-| Error Reason | Scenario |
-| :--- | :--- |
-| `SIGNER_UNAUTHORIZED` | Order has been signed by an account that has not been authorized to make it. |
-| `SIGNATURE_INVALID` | Order has indicated a third-party signer but the signature is incorrect. |
-| `ORDER_ALREADY_TAKEN` | Order has already been taken by its `id` value. |
-| `ORDER_ALREADY_CANCELED` | Order has already been canceled by its `id` value. |
-| `ORDER_EXPIRED` | Order has an `expiry` lower than the current block time. |
-| `SENDER_UNAUTHORIZED` | Order has been sent by an account that has not been authorized to take it. |
-| `VALUE_MUST_BE_SENT` | Order has a null `taker.token` to indicate an ether trade, but insufficient ether was sent. |
-| `VALUE_MUST_BE_ZERO` | Order has a valid `taker.token` but an amount of ether was sent with the transaction. |
-| `INSUFFICIENT_ALLOWANCE` | Transfer was attempted but the sender has not approved the Swap contract to move the balance. |
-| `INSUFFICIENT_BALANCE` | Transfer was attempted but the sender has an insufficient balance. |
-| `INVALID_AUTH_DELEGATE` | Delegate authorization was attempted but the expiry has already passed. |
-| `INVALID_AUTH_EXPIRY` | Delegate authorization was attempted but the expiry has already passed. |
-
-#### Order
+### Order
 ```Solidity
 struct Order {
   uint256 id;
@@ -169,7 +107,7 @@ struct Order {
 | `taker` | `Party` | Required | The taker of the order who accepts price. |
 | `affiliate` | `Party` | Optional | An affiliate to be paid by the maker. |
 
-#### Party
+### Party
 ```Solidity
 struct Party {
   address wallet;
@@ -185,7 +123,7 @@ struct Party {
 | `param` | `uint256` | Required | Either an amount of ERC-20 or identifier of an ERC-721. |
 
 
-#### Signature
+### Signature
 
 ```Solidity
 struct Signature {
@@ -196,8 +134,6 @@ struct Signature {
 }
 ```
 
-Ethereum wallets prefix signed data with byte `\x19` to stay out of range of valid transaction encoding. [EIP-191](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-191.md) standardizes this prefixing to include existing `personal_sign` behavior and [EIP-712](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md) implements it for structured data, which can be interpreted by the signer. In addition to the standard parameters of an elliptic curve signature `v`, `r`, and `s` we include a byte `version` to indicate `personal_sign` (`0x45`) or `signTypedData` (`0x01`) so that hashes can be recreated correctly in contract code.
-
 | Property | Type | Optionality | Description |
 | :--- | :--- | :--- | :--- |
 | `v` | `address` | Required | The wallet address of a party. |
@@ -205,41 +141,220 @@ Ethereum wallets prefix signed data with byte `\x19` to stay out of range of val
 | `s` | `uint256` | Required | Either an amount of ERC-20 or identifier of an ERC-721. |
 | `version` | `uint256` | Required | Either an amount of ERC-20 or identifier of an ERC-721. |
 
+### Reverts
+
+| Reason | Scenario |
+| :--- | :--- |
+| `SIGNER_UNAUTHORIZED` | Order has been signed by an account that has not been authorized to sign it. |
+| `SIGNATURE_INVALID` | Signature provided does not match the Order and signer provided. |
+| `ORDER_ALREADY_TAKEN` | Order has already been taken by its `id` value. |
+| `ORDER_ALREADY_CANCELED` | Order has already been canceled by its `id` value. |
+| `ORDER_EXPIRED` | Order has an `expiry` lower than the current block time. |
+| `SENDER_UNAUTHORIZED` | Order has been sent by an account that has not been authorized to send it. |
+| `VALUE_MUST_BE_SENT` | Order indicates an ether (ETH) Swap, but insufficient ether was sent. |
+| `VALUE_MUST_BE_ZERO` | Order indicates a token Swap, but ether (ETH) was sent along with the transaction. |
+| `INSUFFICIENT_ALLOWANCE` | Transfer was attempted but the sender has not approved the Swap contract to move the balance. |
+| `INSUFFICIENT_BALANCE` | Transfer was attempted but the sender has an insufficient balance. |
+| `INVALID_AUTH_DELEGATE` | Delegate address is the same as the transaction sender address. |
+| `INVALID_AUTH_EXPIRY` | Delegate authorization was attempted but the expiry time has already passed. |
+
+## Swap (Light)
+Lightweight swap between tokens (ERC-20 or ERC-721) using simple signatures.
+
+```Solidity
+function swap(
+  uint256 id,
+  address makerWallet,
+  uint256 makerParam,
+  address makerToken,
+  address takerWallet,
+  uint256 takerParam,
+  address takerToken,
+  uint256 expiry,
+  bytes32 r,
+  bytes32 s,
+  uint8 v
+) external
+```
+
+### Arguments
+
+| Name | Type | Optionality | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `uint256` | Required | A unique identifier for the order. |
+| `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
+| `makerWallet` | `address` | Required | A unique identifier for the order. |
+| `makerParam` | `uint256` | Required | The expiry in seconds since unix epoch. |
+| `makerToken` | `address` | Required | A unique identifier for the order. |
+| `totalCost` | `uint256` | Required | A unique identifier for the order. |
+| `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
+| `r` | `bytes32` | Required | A unique identifier for the order. |
+| `s` | `bytes32` | Required | A unique identifier for the order. |
+| `v` | `uint8` | Required | The expiry in seconds since unix epoch. |
+
+### Reverts
+
+| Reason | Scenario |
+| :--- | :--- |
+| `ORDER_EXPIRED` | Order has an `expiry` lower than the current block time. |
+| `ORDER_UNAVAILABLE` | Order has already been taken by its `id` value. |
+| `SIGNATURE_INVALID` | Order has been signed by the maker but the signature is incorrect. |
+
+## Purchase
+Lightweight purchase of a token for ether using simple signatures.
+
+* Transaction `sender` must be same as `takerAddress` in the signature.
+* Transaction `value` must be same as `takerParam` in the signature.
+
+```Solidity
+function purchase(
+  uint256 id,
+  address makerWallet,
+  uint256 makerParam,
+  address makerToken,
+  uint256 totalCost,
+  uint256 expiry,
+  bytes32 r,
+  bytes32 s,
+  uint8 v
+) external payable
+```
+
+### Arguments
+
+| Name | Type | Optionality | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `uint256` | Required | A unique identifier for the order. |
+| `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
+| `makerWallet` | `Party` | Required | The maker of the order who sets price. |
+| `makerParam` | `uint256` | Required | The expiry in seconds since unix epoch. |
+| `makerToken` | `address` | Required | A unique identifier for the order. |
+| `totalCost` | `uint256` | Required | A unique identifier for the order. |
+| `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
+| `r` | `bytes32` | Required | A unique identifier for the order. |
+| `s` | `bytes32` | Required | A unique identifier for the order. |
+| `v` | `uint8` | Required | The expiry in seconds since unix epoch. |
+
+### Reverts
+
+| Reason | Scenario |
+| :--- | :--- |
+| `ORDER_EXPIRED` | Order has an `expiry` lower than the current block time. |
+| `ORDER_UNAVAILABLE` | Order has already been taken by its `id` value. |
+| `SIGNATURE_INVALID` | Order has been signed by the maker but the signature is incorrect. |
+| `VALUE_INCORRECT` | Value of the transaction (ether) does not match the cost of the purchase. |
+
+## Cancels
+Provide an array of `ids`, unique by maker address, to mark one or more orders as canceled.
+```Solidity
+function cancel(uint256[] memory ids) public
+```
+
+## Authorizations
+Peers may authorize other peers to make (sign) or take (send) orders on their behalf. This is useful for delegating authorization to a trusted third party, whether a user account or smart contract. An authorization works for both sides of a Swap, regardless of whether the delegate signing or sending on ones behalf.
+
 ### Authorize
-For use in the **Full Swap** protocol. Authorize a delegate account or contract to make or take orders on the sender's behalf.
+Authorize a delegate account or contract to make or take orders on the sender's behalf. **Not** available for **Swap (Light)** or **Purchase**.
 ```Solidity
 function authorize(address delegate, uint256 expiry) external returns (bool)
 ```
 
 ### Revoke
-For use in the **Full Swap** protocol. Revoke the authorization of a delegate account or contract.
+Revoke the authorization of a delegate account or contract. **Not** available for **Swap (Light)** or **Purchase**.
 ```Solidity
 function revoke(address delegate) external returns (bool)
 ```
 
-### Cancel
+## Signatures
+When producing [ECDSA](https://hackernoon.com/a-closer-look-at-ethereum-signatures-5784c14abecc) signatures, Ethereum wallets prefix signed data with byte `\x19` to stay out of range of valid RLP so that a signature cannot be executed as a transaction. [EIP-191](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-191.md) standardizes this prefixing to include existing `personal_sign` behavior and [EIP-712](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md) implements it for structured data, which makes the data more transparent for the signer. Signatures are comprised of parameters `v`, `r`, and `s`. Read more about [Ethereum Signatures]().
 
-For use in the **Purchase**, **Light Swap**, or **Full Swap** protocol. Provide an array of `ids`, unique by maker address, to mark one or more orders as canceled.
-```Solidity
-function cancel(uint256[] memory ids) public
+### Simple
+For use in **Swap Light** and **Purchase**. Signature parameters are passed directly to the function. Utilizes a simpler and cheaper hashing function.
+
+```JavaScript
+const msg = web3.utils.soliditySha3(
+  // Version 0x00: Data with intended validator (verifyingContract)
+  { type: 'bytes1', value: '0x0' },
+  { type: 'address', value: verifyingContract },
+  { type: 'uint256', value: orderId },
+  { type: 'address', value: makerWallet },
+  { type: 'uint256', value: makerParam },
+  { type: 'address', value: makerToken },
+  { type: 'address', value: takerWallet },
+  { type: 'uint256', value: takerParam },
+  { type: 'address', value: takerToken },
+  { type: 'uint256', value: expiry },
+);
+const orderHashHex = ethUtil.bufferToHex(msg);
+const sig = await web3.eth.sign(orderHashHex, signer);
+const { v, r, s } = ethUtil.fromRpcSig(sig);
 ```
 
-## Structure
+### Typed Data
+The `Signature` struct is passed to the function including a byte `version` to indicate `personal_sign` (`0x45`) or `signTypedData` (`0x01`) so that hashes can be recreated correctly in contract code.
 
-| File | Functions |
-| :--- | :--- |
-| `contracts` / `AtomicSwap.sol` | `swap` `purchase` `cancel` |
-| `contracts` / `lib` / `Transferable.sol` | `send` `transferAny` `safeTransferAny` |
-| `contracts` / `lib` / `Authorizable.sol` | `authorize` `revoke` `isAuthorized` |
-| `contracts` / `lib` / `Verifiable.sol` | `isValid` `isValidSimple` |
+#### Personal Sign
+You can use `personal_sign` with **Full Swap** by using an EIP-712 hashing function.
+
+```JavaScript
+const ethUtil = require('ethereumjs-util')
+const orderHashHex = hashes.getOrderHash(order); // See: tests/lib/hashes.js:60
+const sig = await web3.eth.sign(orderHashHex, signer);
+const { v, r, s } = ethUtil.fromRpcSig(sig);
+return {
+  version: '0x45', // Version 0x45: personal_sign
+  v, r, s
+}
+```
+
+#### Sign Typed Data
+You can use `signTypedData` with **Full Swap** by calling it directly. Read more about [EIP-712](https://medium.com/metamask/eip712-is-coming-what-to-expect-and-how-to-use-it-bb92fd1a7a26).
+
+```JavaScript
+const ethUtil = require('ethereumjs-util')
+const sigUtil = require('eth-sig-util')
+const sig = sigUtil.signTypedData(privateKey, {
+  data: {
+    types,
+    domain: {
+      name: DOMAIN_NAME,
+      version: DOMAIN_VERSION,
+      verifyingContract,
+    },
+    primaryType: 'Order',
+    message: order,
+  },
+});
+const { v, r, s } = ethUtil.fromRpcSig(sig)
+return {
+  version: '0x01', // Version 0x01: signTypedData
+  v, r, s
+}
+```
+
+## Sources
+
+| File | Location | Contents |
+| :--- | :--- | :--- |
+| `AtomicSwap.sol` | `contracts` | Functions `swap` `purchase` `cancel` |
+| `Transferable.sol` | `contracts/lib` | Functions `send` `transferAny` `safeTransferAny` |
+| `Authorizable.sol` | `contracts/lib` | Functions `authorize` `revoke` `isAuthorized` |
+| `Verifiable.sol` | `contracts/lib` | Functions `isValid` `isValidSimple` |
+| `Swap.js` | `tests` | All tests for `AtomicSwap.sol` |
+| `assert.js` | `tests/lib` | Friendly names for common assertions |
+| `constants.js` | `tests/lib` | Constant values and defaults |
+| `hashes.js` | `tests/lib` | Functions for EIP-712 signature hashing |
+| `helpers.js` | `tests/lib` | Helpers to check allowances and balances |
+| `orders.js` | `tests/lib` | Generates order objects for use in tests |
+| `signatures.js` | `tests/lib` | Generates various kinds of signatures |
 
 ## Tooling
 
-Contracts written in [solidity 0.5.8](https://solidity.readthedocs.io/en/v0.5.7/) and tests written in [Mocha / Chai](https://truffleframework.com/docs/truffle/testing/writing-tests-in-javascript) with JavaScript.
+Contracts written in [solidity 0.5.8](https://solidity.readthedocs.io/en/v0.5.8/) and tests written in [Mocha / Chai](https://truffleframework.com/docs/truffle/testing/writing-tests-in-javascript) with JavaScript.
 
 | Command | Description |
 | :--- | :--- |
-| `yarn test` | Run the tests found in `/test`. |
+| `yarn test` | Run the tests found in `/tests`. |
 | `yarn coverage` | Run a test coverage report. [Forked](https://github.com/dmosites/solidity-coverage) to support `address payable` syntax. |
 | `yarn solhint` | Run a syntax linter for the Solidity code. |
 | `yarn eslint` | Run a syntax linter for the JavaScript code. |
