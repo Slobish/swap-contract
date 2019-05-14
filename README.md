@@ -112,8 +112,7 @@ function swap(
 | `s` | `bytes32` | Required | A unique identifier for the order. |
 | `v` | `uint8` | Required | The expiry in seconds since unix epoch. |
 
-### Errors
-| Reason | Scenario |
+| Error Reason | Scenario |
 | :--- | :--- |
 | `ORDER_EXPIRED` | Order has an `expiry` lower than the current block time. |
 | `ORDER_UNAVAILABLE` | Order has already been taken by its `id` value. |
@@ -135,6 +134,21 @@ function swap(
 | `order` | `Order` | Required | A unique identifier for the order. |
 | `signature` | `Signature` | Required | The expiry in seconds since unix epoch. |
 | `signer` | `address` | Required | A unique identifier for the order. |
+
+| Error Reason | Scenario |
+| :--- | :--- |
+| `SIGNER_UNAUTHORIZED` | Order has been signed by an account that has not been authorized to make it. |
+| `SIGNATURE_INVALID` | Order has indicated a third-party signer but the signature is incorrect. |
+| `ORDER_ALREADY_TAKEN` | Order has already been taken by its `id` value. |
+| `ORDER_ALREADY_CANCELED` | Order has already been canceled by its `id` value. |
+| `ORDER_EXPIRED` | Order has an `expiry` lower than the current block time. |
+| `SENDER_UNAUTHORIZED` | Order has been sent by an account that has not been authorized to take it. |
+| `VALUE_MUST_BE_SENT` | Order has a null `taker.token` to indicate an ether trade, but insufficient ether was sent. |
+| `VALUE_MUST_BE_ZERO` | Order has a valid `taker.token` but an amount of ether was sent with the transaction. |
+| `INSUFFICIENT_ALLOWANCE` | Transfer was attempted but the sender has not approved the Swap contract to move the balance. |
+| `INSUFFICIENT_BALANCE` | Transfer was attempted but the sender has an insufficient balance. |
+| `INVALID_AUTH_DELEGATE` | Delegate authorization was attempted but the expiry has already passed. |
+| `INVALID_AUTH_EXPIRY` | Delegate authorization was attempted but the expiry has already passed. |
 
 #### Order
 ```Solidity
@@ -165,14 +179,13 @@ struct Party {
 ```
 
 | Property | Type | Optionality | Description |
-| :--- | :--- | :--- |
+| :--- | :--- | :--- | :--- |
 | `wallet` | `address` | Required | The wallet address of a party. |
 | `token` | `address` | Required | The address of the token the party will send or receive. |
 | `param` | `uint256` | Required | Either an amount of ERC-20 or identifier of an ERC-721. |
 
 
 #### Signature
-Ethereum wallets prefix signed data with byte `\x19` to stay out of range of valid transaction encoding. [EIP-191](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-191.md) standardizes this prefixing to include existing `personal_sign` behavior and [EIP-712](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md) implements it for structured data, which can be interpreted by the signer. In addition to the standard parameters of an elliptic curve signature `v`, `r`, and `s` we include a byte `version` to indicate `personal_sign` (`0x45`) or `signTypedData` (`0x01`) so that hashes can be recreated correctly in contract code.
 
 ```Solidity
 struct Signature {
@@ -183,21 +196,14 @@ struct Signature {
 }
 ```
 
-#### Errors
-| Reason | Scenario |
-| :--- | :--- |
-| `SIGNER_UNAUTHORIZED` | Order has been signed by an account that has not been authorized to make it. |
-| `SIGNATURE_INVALID` | Order has indicated a third-party signer but the signature is incorrect. |
-| `ORDER_ALREADY_TAKEN` | Order has already been taken by its `id` value. |
-| `ORDER_ALREADY_CANCELED` | Order has already been canceled by its `id` value. |
-| `ORDER_EXPIRED` | Order has an `expiry` lower than the current block time. |
-| `SENDER_UNAUTHORIZED` | Order has been sent by an account that has not been authorized to take it. |
-| `VALUE_MUST_BE_SENT` | Order has a null `taker.token` to indicate an ether trade, but insufficient ether was sent. |
-| `VALUE_MUST_BE_ZERO` | Order has a valid `taker.token` but an amount of ether was sent with the transaction. |
-| `INSUFFICIENT_ALLOWANCE` | Transfer was attempted but the sender has not approved the Swap contract to move the balance. |
-| `INSUFFICIENT_BALANCE` | Transfer was attempted but the sender has an insufficient balance. |
-| `INVALID_AUTH_DELEGATE` | Delegate authorization was attempted but the expiry has already passed. |
-| `INVALID_AUTH_EXPIRY` | Delegate authorization was attempted but the expiry has already passed. |
+Ethereum wallets prefix signed data with byte `\x19` to stay out of range of valid transaction encoding. [EIP-191](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-191.md) standardizes this prefixing to include existing `personal_sign` behavior and [EIP-712](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md) implements it for structured data, which can be interpreted by the signer. In addition to the standard parameters of an elliptic curve signature `v`, `r`, and `s` we include a byte `version` to indicate `personal_sign` (`0x45`) or `signTypedData` (`0x01`) so that hashes can be recreated correctly in contract code.
+
+| Property | Type | Optionality | Description |
+| :--- | :--- | :--- | :--- |
+| `v` | `address` | Required | The wallet address of a party. |
+| `r` | `address` | Required | The address of the token the party will send or receive. |
+| `s` | `uint256` | Required | Either an amount of ERC-20 or identifier of an ERC-721. |
+| `version` | `uint256` | Required | Either an amount of ERC-20 or identifier of an ERC-721. |
 
 ### Authorize
 For use in the **Full Swap** protocol. Authorize a delegate account or contract to make or take orders on the sender's behalf.
@@ -218,7 +224,7 @@ For use in the **Purchase**, **Light Swap**, or **Full Swap** protocol. Provide 
 function cancel(uint256[] memory ids) public
 ```
 
-## Sources
+## Structure
 
 | File | Functions |
 | :--- | :--- |
@@ -227,7 +233,7 @@ function cancel(uint256[] memory ids) public
 | `contracts` / `lib` / `Authorizable.sol` | `authorize` `revoke` `isAuthorized` |
 | `contracts` / `lib` / `Verifiable.sol` | `isValid` `isValidSimple` |
 
-## Tools
+## Tooling
 
 Contracts written in [solidity 0.5.8](https://solidity.readthedocs.io/en/v0.5.7/) and tests written in [Mocha / Chai](https://truffleframework.com/docs/truffle/testing/writing-tests-in-javascript) with JavaScript.
 
