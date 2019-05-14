@@ -353,5 +353,5 @@ Contracts written in [solidity 0.5.8](https://solidity.readthedocs.io/en/v0.5.8/
 | :--- | :--- |
 | `yarn test` | Run the tests found in `/tests`. |
 | `yarn coverage` | Run a test coverage report. [Forked](https://github.com/dmosites/solidity-coverage) to support `address payable` syntax. |
-| `yarn solhint` | Run a syntax linter for the Solidity code. |
-| `yarn eslint` | Run a syntax linter for the JavaScript code. |
+| `yarn hint` | Run a syntax linter for the Solidity code. |
+| `yarn lint` | Run a syntax linter for the JavaScript code. |

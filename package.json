@@ -5,9 +5,9 @@
   "scripts": {
     "compile": "yarn truffle compile",
     "coverage": "yarn solidity-coverage",
-    "eslint": "yarn eslint \"./tests/**/*.js\"",
+    "hint": "yarn solhint \"./contracts/**/*.sol\"",
+    "lint": "yarn eslint \"./tests/**/*.js\"",
     "migrate": "yarn truffle migrate",
-    "solhint": "yarn solhint \"./contracts/**/*.sol\"",
     "test": "yarn truffle test \"./tests/AtomicSwap.js\""
   },
   "devDependencies": {
