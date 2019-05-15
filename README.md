@@ -36,9 +36,6 @@ Cancel multiple orders in a single transaction.
 * [Definitions](#definitions)
 * [Swap](#swap)
   * [Arguments](#arguments)
-  * [Order](#order)
-  * [Party](#party)
-  * [Signature](#signature)
   * [Reverts](#reverts)
 * [Swap (Light)](#swap-light)
   * [Arguments](#arguments-1)
@@ -67,6 +64,7 @@ Cancel multiple orders in a single transaction.
 | Affiliate | An *optional* party compensated by the Maker for facilitating a Swap. |
 | Delegate | An *optional* party authorized to make or take Orders on behalf of another party. |
 | Order | A specification of the tokens, amounts, and parties to a Swap. |
+| Signature | An asymmetric cryptographic signature of an Order. |
 | ID | A parameter of every Order that is unique to its Maker. |
 
 ## Swap
@@ -86,60 +84,33 @@ function swap(
 | `order` | `Order` | Required | Order struct as specified below. |
 | `signature` | `Signature` | Required | Signature struct as specified below. |
 
-### Order
 ```Solidity
 struct Order {
-  uint256 id;
-  uint256 expiry;
-  Party maker;
-  Party taker;
-  Party affiliate;
+  uint256 id;      // A unique identifier for the Order
+  uint256 expiry;  // The expiry in seconds since unix epoch
+  Party maker;     // The Maker of the Order who sets price
+  Party taker;     // The Taker of the Order who accepts price
+  Party affiliate; // Optional affiliate to be paid by the Maker
 }
 ```
 
-| Property | Type | Optionality | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | `uint256` | Required | A unique identifier for the Order. |
-| `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
-| `maker` | `Party` | Required | The Maker of the Order who sets price. |
-| `taker` | `Party` | Required | The Taker of the Order who accepts price. |
-| `affiliate` | `Party` | Optional | An affiliate to be paid by the Maker. |
-
-### Party
 ```Solidity
 struct Party {
-  address wallet;
-  address token;
-  uint256 param;
+  address wallet;  // The Ethereum account of the party
+  address token;   // The address of the token the party sends or receives
+  uint256 param;   // The amount of ERC-20 or the identifier of an ERC-721
 }
 ```
-
-| Property | Type | Optionality | Description |
-| :--- | :--- | :--- | :--- |
-| `wallet` | `address` | Required | The wallet address of a party. |
-| `token` | `address` | Required | The address of the token the party sends or receives. |
-| `param` | `uint256` | Required | Either an amount of ERC-20 or identifier of an ERC-721. |
-
-
-### Signature
 
 ```Solidity
 struct Signature {
-  address signer;
-  bytes32 r;
-  bytes32 s;
-  uint8 v;
-  bytes1 version;
+  address signer;  // The address of the signer Ethereum account
+  bytes32 r;       // The `r` value of an ECDSA signature
+  bytes32 s;       // The `s` value of an ECDSA signature
+  uint8 v;         // The `v` value of an ECDSA signature
+  bytes1 version;  // Indicates the signing method used
 }
 ```
-
-| Property | Type | Optionality | Description |
-| :--- | :--- | :--- | :--- |
-| `signer` | `address` | Required | The address of the account used to produce a signature. |
-| `r` | `bytes32` | Required | The `r` value of an ECDSA signature. |
-| `s` | `bytes32` | Required | The `s` value of an ECDSA signature. |
-| `v` | `uint8` | Required | The `v` value of an ECDSA signature. |
-| `version` | `bytes1` | Required | Indicates that either `personal_sign` or `signTypedData` was used. |
 
 ### Reverts
 
@@ -185,7 +156,7 @@ function swap(
 | :--- | :--- | :--- | :--- |
 | `id` | `uint256` | Required | A unique identifier for the Order. |
 | `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
-| `makerWallet` | `Party` | Required | The Maker of the Order who sets price. |
+| `makerWallet` | `address` | Required | The Maker of the Order who sets price. |
 | `makerParam` | `uint256` | Required | The amount or identifier of the token the Maker sends. |
 | `makerToken` | `address` | Required | The address of the token the Maker sends. |
 | `takerParam` | `uint256` | Required | The amount or identifier of the token the Taker sends. |
