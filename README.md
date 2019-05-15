@@ -1,5 +1,6 @@
-# Swap Protocol
-The [Swap Protocol](https://swap.tech/whitepaper/) is a peer-to-peer protocol for trading Ethereum tokens.
+# Atomic Swap
+
+The [Swap Protocol](https://swap.tech/whitepaper/) is a peer-to-peer protocol for trading Ethereum tokens. This repository contains source code and tests for the Atomic Swap used by the Swap Protocol.
 
 ## Quick Start
 
@@ -279,7 +280,7 @@ You can use `signTypedData` with **Full Swap** by calling it directly. Read more
 ```JavaScript
 const ethUtil = require('ethereumjs-util')
 const sigUtil = require('eth-sig-util')
-const DOMAIN_NAME = 'AIRSWAP'
+const DOMAIN_NAME = 'SWAP'
 const DOMAIN_VERSION = '2'
 const verifyingContract = '0x0...' // Address of the Swap Contract
 const sig = sigUtil.signTypedData(privateKey, {
@@ -349,3 +350,12 @@ Contracts written in [solidity 0.5.8](https://solidity.readthedocs.io/en/v0.5.8/
 | `yarn coverage` | Run a test coverage report. [Forked](https://github.com/dmosites/solidity-coverage) to support `address payable` syntax. |
 | `yarn hint` | Run a syntax linter for the Solidity code. |
 | `yarn lint` | Run a syntax linter for the JavaScript code. |
+
+## License
+
+Copyright 2019 Swap Holdings Ltd.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.

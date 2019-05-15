@@ -5,7 +5,7 @@ pragma experimental ABIEncoderV2;
 contract Verifiable {
 
   bytes constant internal EIP191_HEADER = "\x19\x01";
-  bytes constant internal DOMAIN_NAME = "AIRSWAP";
+  bytes constant internal DOMAIN_NAME = "SWAP";
   bytes constant internal DOMAIN_VERSION = "2";
 
   bytes32 private domainSeparator;
