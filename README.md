@@ -1,4 +1,4 @@
-# Atomic Swap
+# Swap Contract
 
 The [Swap Protocol](https://swap.tech/whitepaper/) is a peer-to-peer protocol for trading Ethereum tokens. This repository contains source code and tests for the Atomic Swap used by the Swap Protocol.
 
