@@ -35,8 +35,9 @@ $ cd swap-contract
 $ yarn
 $ yarn ganache-cli
 ```
-In another window...
+In another session...
 ```
+$ cd swap-contract
 $ yarn test
 ```
 
