@@ -2,6 +2,8 @@
 
 The [Swap Protocol](https://swap.tech/whitepaper/) is a peer-to-peer protocol for trading Ethereum tokens. This repository contains source code and tests for the Atomic Swap used by the Swap Protocol.
 
+## Contents
+
 * [Quick Start](#quick-start)
 * [Highlights](#highlights)
 * [Definitions](#definitions)
@@ -17,7 +19,7 @@ The [Swap Protocol](https://swap.tech/whitepaper/) is a peer-to-peer protocol fo
   * [Revoke](#revoke)
 * [Events](#events)
   * [Swap](#swap-1)
-  * [Cancel](#cancel-1)
+  * [Cancel](#cancel)
 * [Signatures](#signatures)
   * [Simple](#simple)
   * [Typed Data](#typed-data)
@@ -31,6 +33,10 @@ The [Swap Protocol](https://swap.tech/whitepaper/) is a peer-to-peer protocol fo
 $ git clone git:github.com/airswap/swap-contract.git
 $ cd swap-contract
 $ yarn
+$ yarn ganache-cli
+```
+In another window...
+```
 $ yarn test
 ```
 
