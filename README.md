@@ -2,6 +2,29 @@
 
 The [Swap Protocol](https://swap.tech/whitepaper/) is a peer-to-peer protocol for trading Ethereum tokens. This repository contains source code and tests for the Atomic Swap used by the Swap Protocol.
 
+* [Quick Start](#quick-start)
+* [Highlights](#highlights)
+* [Definitions](#definitions)
+* [Swap](#swap)
+  * [Arguments](#arguments)
+  * [Reverts](#reverts)
+* [Swap (Light)](#swap-light)
+  * [Arguments](#arguments-1)
+  * [Reverts](#reverts-1)
+* [Cancels](#cancels)
+* [Authorizations](#authorizations)
+  * [Authorize](#authorize)
+  * [Revoke](#revoke)
+* [Events](#events)
+  * [Swap](#swap-1)
+  * [Cancel](#cancel-1)
+* [Signatures](#signatures)
+  * [Simple](#simple)
+  * [Typed Data](#typed-data)
+* [Sources](#sources)
+* [Tooling](#tooling)
+* [License](#license)
+
 ## Quick Start
 
 ```bash
@@ -30,29 +53,6 @@ Compensate those who facilitate trades.
 
 ### Batch Cancels
 Cancel multiple orders in a single transaction.
-
-## Table of Contents
-
-* [Definitions](#definitions)
-* [Swap](#swap)
-  * [Arguments](#arguments)
-  * [Reverts](#reverts)
-* [Swap (Light)](#swap-light)
-  * [Arguments](#arguments-1)
-  * [Reverts](#reverts-1)
-* [Cancel](#cancel)
-* [Authorizations](#authorizations)
-  * [Authorize](#authorize)
-  * [Revoke](#revoke)
-* [Events](#events)
-  * [Swap](#swap-1)
-  * [cancel](#cancel-1)
-* [Signatures](#signatures)
-  * [Simple](#simple)
-  * [Typed Data](#typed-data)
-* [Sources](#sources)
-* [Tooling](#tooling)
-* [License](#license)
 
 ## Definitions
 
