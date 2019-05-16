@@ -5,8 +5,8 @@ The [Swap Protocol](https://swap.tech/whitepaper/) is a peer-to-peer protocol fo
 ## Quick Start
 
 ```bash
-$ git clone git:github.com/airswap/atomic-swap.git
-$ cd atomic-swap
+$ git clone git:github.com/airswap/swap-contract.git
+$ cd swap-contract
 $ yarn
 $ yarn test
 ```
