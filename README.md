@@ -239,10 +239,10 @@ You can use `personal_sign` with **Full Swap** by using an EIP-712 hashing funct
 const ethUtil = require('ethereumjs-util')
 const orderHashHex = hashes.getOrderHash(order); // See: tests/lib/hashes.js:60
 const sig = await web3.eth.sign(orderHashHex, signer);
-const { v, r, s } = ethUtil.fromRpcSig(sig);
+const { r, s, v } = ethUtil.fromRpcSig(sig);
 return {
   version: '0x45', // Version 0x45: personal_sign
-  v, r, s
+  r, s, v
 }
 ```
 
@@ -267,10 +267,10 @@ const sig = sigUtil.signTypedData(privateKey, {
     message: order, // See: tests/lib/orders.js:28
   },
 });
-const { v, r, s } = ethUtil.fromRpcSig(sig)
+const { r, s, v } = ethUtil.fromRpcSig(sig)
 return {
   version: '0x01', // Version 0x01: signTypedData
-  v, r, s
+  r, s, v
 }
 ```
 
@@ -293,7 +293,7 @@ const msg = web3.utils.soliditySha3(
 );
 const orderHashHex = ethUtil.bufferToHex(msg);
 const sig = await web3.eth.sign(orderHashHex, signer);
-const { v, r, s } = ethUtil.fromRpcSig(sig);
+const { r, s, v } = ethUtil.fromRpcSig(sig);
 ```
 
 ## Sources
