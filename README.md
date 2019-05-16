@@ -300,11 +300,11 @@ const { r, s, v } = ethUtil.fromRpcSig(sig);
 
 | File | Location | Contents |
 | :--- | :--- | :--- |
-| `AtomicSwap.sol` | `contracts` | Functions `swap` `cancel` |
+| `Swap.sol` | `contracts` | Functions `swap` `cancel` |
 | `Transferable.sol` | `contracts/lib` | Functions `send` `transferAny` `safeTransferAny` |
 | `Authorizable.sol` | `contracts/lib` | Functions `authorize` `revoke` `isAuthorized` |
 | `Verifiable.sol` | `contracts/lib` | Functions `isValid` `isValidSimple` |
-| `Swap.js` | `tests` | All tests for `AtomicSwap.sol` |
+| `Swap.js` | `tests` | All tests for `Swap.sol` |
 | `assert.js` | `tests/lib` | Friendly names for common assertions |
 | `constants.js` | `tests/lib` | Constant values and defaults |
 | `hashes.js` | `tests/lib` | Functions for EIP-712 signature hashing |

@@ -14,7 +14,7 @@
     "hint": "yarn solhint \"./contracts/**/*.sol\"",
     "lint": "yarn eslint \"./tests/**/*.js\"",
     "migrate": "yarn truffle migrate",
-    "test": "yarn truffle test \"./tests/AtomicSwap.js\""
+    "test": "yarn truffle test \"./tests/Swap.js\""
   },
   "devDependencies": {
     "babel-eslint": "^10.0.1",

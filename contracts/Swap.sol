@@ -9,7 +9,7 @@ import "./lib/Verifiable.sol";
 /**
 * @title Atomic swap contract used by the Swap Protocol
 */
-contract AtomicSwap is Authorizable, Transferable, Verifiable {
+contract Swap is Authorizable, Transferable, Verifiable {
 
   byte constant private OPEN = 0x00;
   byte constant private TAKEN = 0x01;
