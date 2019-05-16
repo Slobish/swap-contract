@@ -41,7 +41,7 @@ Cancel multiple orders in a single transaction.
   * [Arguments](#arguments-1)
   * [Reverts](#reverts-1)
 * [Cancel](#cancel)
-* [Authorizations](#authorize)
+* [Authorizations](#authorizations)
   * [Authorize](#authorize)
   * [Revoke](#revoke)
 * [Events](#events)
