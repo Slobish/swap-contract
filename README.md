@@ -5,10 +5,10 @@ The [Swap Protocol](https://swap.tech/whitepaper/) is a peer-to-peer protocol fo
 ## Quick Start
 
 ```bash
-$ git clone git:github.com/airswap/swap-protocol.git
-$ cd swap-protocol
+$ git clone git:github.com/airswap/atomic-swap.git
+$ cd atomic-swap
 $ yarn
-$ yarn coverage
+$ yarn test
 ```
 
 ## Highlights
