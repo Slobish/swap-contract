@@ -36,7 +36,7 @@ $ yarn
 $ yarn ganache-cli
 ```
 In another session...
-```
+```bash
 $ cd swap-contract
 $ yarn test
 ```
