@@ -1,11 +1,11 @@
-pragma solidity 0.5.7;
+pragma solidity 0.5.8;
 pragma experimental ABIEncoderV2;
 
 
 contract Verifiable {
 
   bytes constant internal EIP191_HEADER = "\x19\x01";
-  bytes constant internal DOMAIN_NAME = "AIRSWAP";
+  bytes constant internal DOMAIN_NAME = "SWAP";
   bytes constant internal DOMAIN_VERSION = "2";
 
   bytes32 private domainSeparator;
@@ -17,18 +17,18 @@ contract Verifiable {
   }
 
   struct Order {
+    uint256 id;
     uint256 expiry;
-    uint256 nonce;
-    address signer;
     Party maker;
     Party taker;
     Party affiliate;
   }
 
   struct Signature {
-    uint8 v;
+    address signer;
     bytes32 r;
     bytes32 s;
+    uint8 v;
     bytes1 version;
   }
 
@@ -42,9 +42,8 @@ contract Verifiable {
 
   bytes32 internal constant ORDER_TYPEHASH = keccak256(abi.encodePacked(
       "Order(",
+      "uint256 id,",
       "uint256 expiry,",
-      "uint256 nonce,",
-      "address signer,",
       "Party maker,",
       "Party taker,",
       "Party affiliate",
@@ -73,7 +72,7 @@ contract Verifiable {
     ));
   }
 
-  function hashParty(Party memory party) public pure returns (bytes32) {
+  function hashParty(Party memory party) internal pure returns (bytes32) {
     return keccak256(abi.encode(
         PARTY_TYPEHASH,
         party.wallet,
@@ -82,15 +81,14 @@ contract Verifiable {
     ));
   }
 
-  function hashOrder(Order memory order) public view returns (bytes32) {
+  function hashOrder(Order memory order) internal view returns (bytes32) {
     return keccak256(abi.encodePacked(
         EIP191_HEADER,
         domainSeparator,
         keccak256(abi.encode(
             ORDER_TYPEHASH,
+            order.id,
             order.expiry,
-            order.nonce,
-            order.signer,
             hashParty(order.maker),
             hashParty(order.taker),
             hashParty(order.affiliate)
@@ -98,15 +96,21 @@ contract Verifiable {
     ));
   }
 
-  function isValid(Order memory order, address signer, Signature memory signature) public view returns (bool) {
+  /**
+    * @notice Validates signature using an EIP-712 typed data hash.
+    *
+    * @param order Order
+    * @param signature Signature
+    */
+  function isValid(Order memory order, Signature memory signature) internal view returns (bool) {
     if (signature.version == byte(0x01)) {
-      return signer == ecrecover(
+      return signature.signer == ecrecover(
           hashOrder(order),
           signature.v, signature.r, signature.s
       );
     }
     if (signature.version == byte(0x45)) {
-      return signer == ecrecover(
+      return signature.signer == ecrecover(
           keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hashOrder(order))),
           signature.v, signature.r, signature.s
       );
@@ -114,35 +118,43 @@ contract Verifiable {
     return false;
   }
 
-  function isValidLegacy(
-    address makerAddress,
-    uint makerAmount,
-    address makerToken,
-    address takerAddress,
-    uint takerAmount,
-    address takerToken,
-    uint256 expiration,
-    uint256 nonce,
-    uint8 v,
-    bytes32 r,
-    bytes32 s
-  ) public view returns (bool) {
-
-    return makerAddress == ecrecover(
+  /**
+    * @notice Validates signature using a simple hash and verifyingContract.
+    * @dev Determines type (ERC-20 or ERC-721) with ERC-165
+    *
+    * @param id uint256
+    * @param makerWallet address
+    * @param makerParam uint256
+    * @param makerToken address
+    * @param takerWallet address
+    * @param takerParam uint256
+    * @param takerToken address
+    * @param expiry uint256
+    * @param r bytes32
+    * @param s bytes32
+    * @param v uint8
+    */
+  function isValidSimple(uint256 id,
+    address makerWallet, uint256 makerParam, address makerToken,
+    address takerWallet, uint256 takerParam, address takerToken,
+    uint256 expiry, bytes32 r, bytes32 s, uint8 v
+    ) internal view returns (bool) {
+    return makerWallet == ecrecover(
       keccak256(abi.encodePacked(
         "\x19Ethereum Signed Message:\n32",
         keccak256(abi.encodePacked(
           byte(0),
           this,
-          makerAddress,
-          makerAmount,
+          id,
+          makerWallet,
+          makerParam,
           makerToken,
-          takerAddress,
-          takerAmount,
+          takerWallet,
+          takerParam,
           takerToken,
-          expiration,
-          nonce
+          expiry
         )))),
       v, r, s);
   }
+
 }

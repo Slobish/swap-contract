@@ -1,6 +1,6 @@
 module.exports = {
   NULL_ADDRESS: '0x0000000000000000000000000000000000000000',
-  DOMAIN_NAME: 'AIRSWAP',
+  DOMAIN_NAME: 'SWAP',
   DOMAIN_VERSION: '2',
   types: {
     EIP712Domain: [
@@ -9,9 +9,8 @@ module.exports = {
       { name: 'verifyingContract', type: 'address' },
     ],
     Order: [
+      { name: 'id', type: 'uint256' },
       { name: 'expiry', type: 'uint256' },
-      { name: 'nonce', type: 'uint256' },
-      { name: 'signer', type: 'address' },
       { name: 'maker', type: 'Party' },
       { name: 'taker', type: 'Party' },
       { name: 'affiliate', type: 'Party' },

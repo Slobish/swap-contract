@@ -1,11 +1,11 @@
-const Swap = artifacts.require('./Swap.sol')
-const FungibleA = artifacts.require('./test/FungibleA.sol')
-const FungibleB = artifacts.require('./test/FungibleB.sol')
-const NonFungibleA = artifacts.require('./test/NonFungibleA.sol')
-const NonFungibleB = artifacts.require('./test/NonFungibleB.sol')
+const AtomicSwap = artifacts.require('./AtomicSwap.sol')
+const FungibleA = artifacts.require('./tests/FungibleA.sol')
+const FungibleB = artifacts.require('./tests/FungibleB.sol')
+const NonFungibleA = artifacts.require('./tests/NonFungibleA.sol')
+const NonFungibleB = artifacts.require('./tests/NonFungibleB.sol')
 
 module.exports = (deployer) => {
-  deployer.deploy(Swap)
+  deployer.deploy(AtomicSwap)
   deployer.deploy(FungibleA)
   deployer.deploy(FungibleB)
   deployer.deploy(NonFungibleA)
