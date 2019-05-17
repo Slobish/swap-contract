@@ -52,13 +52,9 @@ contract Swap is Authorizable, Transferable, Verifiable {
     external payable
   {
 
-    // Ensure the order signer is authorized
-    require(isAuthorized(order.maker.wallet, signature.signer),
-      "SIGNER_UNAUTHORIZED");
-
-    // Ensure the order signature is valid
-    require(isValid(order, signature),
-      "SIGNATURE_INVALID");
+    // Ensure the order is not expired
+    require(order.expiry > block.timestamp,
+      "ORDER_EXPIRED");
 
     // Ensure the order has not already been taken
     require(makerOrderStatus[order.maker.wallet][order.id] != TAKEN,
@@ -68,15 +64,19 @@ contract Swap is Authorizable, Transferable, Verifiable {
     require(makerOrderStatus[order.maker.wallet][order.id] != CANCELED,
       "ORDER_ALREADY_CANCELED");
 
-    // Ensure the order is not expired
-    require(order.expiry > block.timestamp,
-      "ORDER_EXPIRED");
-
     // Ensure the order sender is authorized
     if (msg.sender != order.taker.wallet) {
       require(isAuthorized(order.taker.wallet, msg.sender),
         "SENDER_UNAUTHORIZED");
     }
+
+    // Ensure the order signer is authorized
+    require(isAuthorized(order.maker.wallet, signature.signer),
+      "SIGNER_UNAUTHORIZED");
+
+    // Ensure the order signature is valid
+    require(isValid(order, signature),
+      "SIGNATURE_INVALID");
 
     // Mark the order taken (0x01)
     makerOrderStatus[order.maker.wallet][order.id] = TAKEN;
@@ -174,6 +174,12 @@ contract Swap is Authorizable, Transferable, Verifiable {
     // Ensure the order has not already been taken or canceled
     require(makerOrderStatus[makerWallet][id] == OPEN,
       "ORDER_UNAVAILABLE");
+
+    // Ensure the order sender is authorized
+    if (msg.sender != takerWallet) {
+      require(isAuthorized(takerWallet, msg.sender),
+        "SENDER_UNAUTHORIZED");
+    }
 
     // Ensure the order signature is valid
     require(isValidSimple(
