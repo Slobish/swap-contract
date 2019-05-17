@@ -136,7 +136,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
   }
 
   /**
-    * @notice Atomic Token Swap (Light)
+    * @notice Atomic Token Swap (Simple)
     * @dev Determines type (ERC-20 or ERC-721) with ERC-165
     *
     * @param id uint256
