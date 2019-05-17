@@ -15,7 +15,7 @@
     "lint": "yarn eslint \"./test/**/*.js\"",
     "migrate": "yarn truffle migrate",
     "test": "yarn truffle test \"./test/Swap.js\"",
-    "ts": "node_modules/@0x/abi-gen/bin/abi-gen.js --abis 'build/contracts/Swap.json' --output 'ts'  --partials 'node_modules/@0x/abi-gen-templates/partials/*.handlebars' --template 'node_modules/@0x/abi-gen-templates/contract.handlebars' --backend ethers"
+    "ts": "yarn truffle compile && node_modules/@0x/abi-gen/bin/abi-gen.js --abis 'build/contracts/Swap.json' --output 'ts'  --partials 'node_modules/@0x/abi-gen-templates/partials/*.handlebars' --template 'node_modules/@0x/abi-gen-templates/contract.handlebars' --backend ethers"
   },
   "devDependencies": {
     "@0x/abi-gen": "^2.0.10",
