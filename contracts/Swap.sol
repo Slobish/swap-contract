@@ -78,7 +78,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
     require(isValid(order, signature),
       "SIGNATURE_INVALID");
 
-    // Mark the order taken (0x01)
+    // Mark the order TAKEN (0x01)
     makerOrderStatus[order.maker.wallet][order.id] = TAKEN;
 
     // A null taker token is an order for ether
@@ -151,7 +151,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
     * @param s bytes32
     * @param v uint8
     */
-  function swap(
+  function swapSimple(
     uint256 id,
     address makerWallet,
     uint256 makerParam,
@@ -194,7 +194,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
       r, s, v
     ), "SIGNATURE_INVALID");
 
-    // Mark the order taken (0x01).
+    // Mark the order TAKEN (0x01)
     makerOrderStatus[makerWallet][id] = TAKEN;
 
     // A null taker token is an order for ether
@@ -229,8 +229,8 @@ contract Swap is Authorizable, Transferable, Verifiable {
 
   }
 
-  /** @notice Cancel a batch of orders.
-    * @dev Canceled orders are marked with byte 0x02.
+  /** @notice Cancel a batch of orders
+    * @dev Canceled orders are marked CANCELED (0x02)
     * @param ids uint256[]
     */
   function cancel(uint256[] calldata ids) external {
