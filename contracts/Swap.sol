@@ -151,7 +151,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
     * @param s bytes32
     * @param v uint8
     */
-  function swap(
+  function swapSimple(
     uint256 id,
     address makerWallet,
     uint256 makerParam,
