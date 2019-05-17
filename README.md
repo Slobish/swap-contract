@@ -143,7 +143,7 @@ struct Signature {
 Lightweight swap between tokens (ERC-20 or ERC-721) using simple signatures.
 
 ```Solidity
-function swap(
+function swapSimple(
   uint256 id,
   address makerWallet,
   uint256 makerParam,
@@ -191,7 +191,7 @@ function cancel(uint256[] memory ids) external
 Peers may authorize other peers to make (sign) or take (send) Orders on their behalf. This is useful for delegating authorization to a trusted third party, whether a user account or smart contract. An authorization works for both sides of a Swap, regardless of whether the delegate signing or sending on ones behalf.
 
 ### Authorize
-Authorize a delegate account or contract to make (sign) or take (send) Orders on the sender's behalf. Only sender authorization, for example delegation to another smart contract to take orders, is supported for **Swap (Simple)**.
+Authorize a delegate account or contract to make (sign) or take (send) Orders on the sender's behalf. `swapSimple` only supports sender authorization, for example delegation to another smart contract to take orders.
 ```Solidity
 function authorize(address delegate, uint256 expiry) external returns (bool)
 ```
@@ -237,10 +237,10 @@ event Cancel(
 When producing [ECDSA](https://hackernoon.com/a-closer-look-at-ethereum-signatures-5784c14abecc) signatures, Ethereum wallets prefix signed data with byte `\x19` to stay out of range of valid RLP so that a signature cannot be executed as a transaction. [EIP-191](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-191.md) standardizes this prefixing to include existing `personal_sign` behavior and [EIP-712](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md) implements it for structured data, which makes the data more transparent for the signer. Signatures are comprised of parameters `v`, `r`, and `s`. Read more about [Ethereum Signatures]().
 
 ### Typed Data
-For use in **Swap**. The `Signature` struct is passed to the function including a byte `version` to indicate `personal_sign` (`0x45`) or `signTypedData` (`0x01`) so that hashes can be recreated correctly in contract code.
+For use in the `swap` function. The `Signature` struct is passed to the function including a byte `version` to indicate `personal_sign` (`0x45`) or `signTypedData` (`0x01`) so that hashes can be recreated correctly in contract code.
 
 #### Personal Sign
-You can use `personal_sign` with **Full Swap** by using an EIP-712 hashing function.
+You can use `personal_sign` with `swap` by using an EIP-712 hashing function.
 
 ```JavaScript
 const ethUtil = require('ethereumjs-util')
@@ -254,7 +254,7 @@ return {
 ```
 
 #### Sign Typed Data
-You can use `signTypedData` with **Full Swap** by calling it directly. Read more about [EIP-712](https://medium.com/metamask/eip712-is-coming-what-to-expect-and-how-to-use-it-bb92fd1a7a26).
+You can use `signTypedData` with `swap` by calling it directly. Read more about [EIP-712](https://medium.com/metamask/eip712-is-coming-what-to-expect-and-how-to-use-it-bb92fd1a7a26).
 
 ```JavaScript
 const ethUtil = require('ethereumjs-util')
@@ -282,7 +282,7 @@ return {
 ```
 
 ### Simple
-For use in **Swap (Simple)**. Signature parameters are passed directly to the function.
+For use in the `swapSimple` function. Signature parameters are passed in directly.
 
 ```JavaScript
 const msg = web3.utils.soliditySha3(
@@ -307,7 +307,7 @@ const { r, s, v } = ethUtil.fromRpcSig(sig);
 
 | File | Location | Contents |
 | :--- | :--- | :--- |
-| `Swap.sol` | `contracts` | Functions `swap` `cancel` |
+| `Swap.sol` | `contracts` | Functions `swap` `swapSimple` `cancel` |
 | `Transferable.sol` | `contracts/lib` | Functions `send` `transferAny` `safeTransferAny` |
 | `Authorizable.sol` | `contracts/lib` | Functions `authorize` `revoke` `isAuthorized` |
 | `Verifiable.sol` | `contracts/lib` | Functions `isValid` `isValidSimple` |
