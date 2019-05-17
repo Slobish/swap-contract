@@ -46,7 +46,7 @@ contract('Swap', ([
       swapAddress = swapContract.address
 
       swap = swapContract.methods['swap((uint256,uint256,(address,address,uint256),(address,address,uint256),(address,address,uint256)),(address,bytes32,bytes32,uint8,bytes1))']
-      swapSimple = swapContract.methods['swap(uint256,address,uint256,address,address,uint256,address,uint256,bytes32,bytes32,uint8)']
+      swapSimple = swapContract.methods['swapSimple(uint256,address,uint256,address,address,uint256,address,uint256,bytes32,bytes32,uint8)']
       cancel = swapContract.methods['cancel(uint256[])']
 
       orders.setVerifyingContract(swapAddress)
