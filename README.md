@@ -24,7 +24,8 @@ The [Swap Protocol](https://swap.tech/whitepaper/) is a peer-to-peer protocol fo
   * [Simple](#simple)
   * [Typed Data](#typed-data)
 * [Sources](#sources)
-* [Tooling](#tooling)
+* [TypeScript](#typescript)
+* [Commands](#commands)
 * [License](#license)
 
 ## Quick Start
@@ -319,16 +320,20 @@ const { r, s, v } = ethUtil.fromRpcSig(sig);
 | `orders.js` | `test/lib` | Generates Order objects for use in tests |
 | `signatures.js` | `test/lib` | Generates various kinds of signatures |
 
-## Tooling
+## TypeScript
+To interact with Swap using [TypeScript](https://www.typescriptlang.org/) you'll find a `swap.ts` module in the [wrappers](wrappers/) folder.
+
+## Commands
 
 Contracts written in [solidity 0.5.8](https://solidity.readthedocs.io/en/v0.5.8/) and tests written in [Mocha / Chai](https://truffleframework.com/docs/truffle/testing/writing-tests-in-javascript) with JavaScript.
 
 | Command | Description |
 | :--- | :--- |
-| `yarn test` | Run the tests found in `/test`. |
-| `yarn coverage` | Run a test coverage report. [Forked](https://github.com/dmosites/solidity-coverage) to support `address payable` syntax. |
-| `yarn hint` | Run a syntax linter for the Solidity code. |
-| `yarn lint` | Run a syntax linter for the JavaScript code. |
+| `yarn compile` | Build the contracts to `build` |
+| `yarn ts` | Build the TypeScript module to `wrappers` |
+| `yarn test` | Run the tests found in `test` |
+| `yarn hint` | Run a syntax linter for the Solidity code |
+| `yarn lint` | Run a syntax linter for the JavaScript code |
 
 ## License
 
