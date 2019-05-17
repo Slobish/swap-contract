@@ -35,7 +35,7 @@ contract('Swap', ([
   let tokenKitty
 
   let swap
-  let swapLight
+  let swapSimple
   let cancel
 
   orders.setKnownAccounts([aliceAddress, bobAddress, carolAddress, davidAddress])
@@ -46,7 +46,7 @@ contract('Swap', ([
       swapAddress = swapContract.address
 
       swap = swapContract.methods['swap((uint256,uint256,(address,address,uint256),(address,address,uint256),(address,address,uint256)),(address,bytes32,bytes32,uint8,bytes1))']
-      swapLight = swapContract.methods['swap(uint256,address,uint256,address,address,uint256,address,uint256,bytes32,bytes32,uint8)']
+      swapSimple = swapContract.methods['swap(uint256,address,uint256,address,address,uint256,address,uint256,bytes32,bytes32,uint8)']
       cancel = swapContract.methods['cancel(uint256[])']
 
       orders.setVerifyingContract(swapAddress)
@@ -440,8 +440,8 @@ contract('Swap', ([
     })
   })
 
-  describe('Swap (Light)', () => {
-    it('Checks that a Swap (Light) succeeds', async () => {
+  describe('Swap (Simple)', () => {
+    it('Checks that a Swap (Simple) succeeds', async () => {
       const { order } = await orders.getOrder({
         maker: {
           wallet: aliceAddress,
@@ -457,7 +457,7 @@ contract('Swap', ([
 
       const signature = await signatures.getSimpleSignature(order, aliceAddress, swapAddress)
 
-      emitted(await swapLight(
+      emitted(await swapSimple(
         order.id,
         order.maker.wallet,
         order.maker.param,
@@ -489,7 +489,7 @@ contract('Swap', ([
 
       // Signs with bobAddress rather than alice Address.
       const signature = await signatures.getSimpleSignature(order, bobAddress, swapAddress)
-      await reverted(swapLight(
+      await reverted(swapSimple(
         order.id,
         order.maker.wallet,
         order.maker.param,
@@ -506,8 +506,8 @@ contract('Swap', ([
     })
   })
 
-  describe('Swap (Light) for ETH', () => {
-    it('Checks that a Swap (Light) for ETH succeeds', async () => {
+  describe('Swap (Simple) for ETH', () => {
+    it('Checks that a Swap (Simple) for ETH succeeds', async () => {
       const { order } = await orders.getOrder({
         maker: {
           wallet: aliceAddress,
@@ -523,7 +523,7 @@ contract('Swap', ([
 
       const signature = await signatures.getSimpleSignature(order, aliceAddress, swapAddress)
 
-      emitted(await swapLight(
+      emitted(await swapSimple(
         order.id,
         order.maker.wallet,
         order.maker.param,

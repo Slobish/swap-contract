@@ -12,9 +12,9 @@
   "scripts": {
     "compile": "yarn truffle compile",
     "hint": "yarn solhint \"./contracts/**/*.sol\"",
-    "lint": "yarn eslint \"./tests/**/*.js\"",
+    "lint": "yarn eslint \"./test/**/*.js\"",
     "migrate": "yarn truffle migrate",
-    "test": "yarn truffle test \"./tests/Swap.js\"",
+    "test": "yarn truffle test \"./test/Swap.js\"",
     "ts": "node_modules/@0x/abi-gen/bin/abi-gen.js --abis 'build/contracts/Swap.json' --output 'ts'  --partials 'node_modules/@0x/abi-gen-templates/partials/*.handlebars' --template 'node_modules/@0x/abi-gen-templates/contract.handlebars' --backend ethers"
   },
   "devDependencies": {
