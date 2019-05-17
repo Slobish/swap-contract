@@ -10,7 +10,7 @@ The [Swap Protocol](https://swap.tech/whitepaper/) is a peer-to-peer protocol fo
 * [Swap](#swap)
   * [Arguments](#arguments)
   * [Reverts](#reverts)
-* [Swap (Light)](#swap-light)
+* [Swap (Simple)](#swap-simple)
   * [Arguments](#arguments-1)
   * [Reverts](#reverts-1)
 * [Cancels](#cancels)
@@ -139,7 +139,7 @@ struct Signature {
 | `INVALID_AUTH_DELEGATE` | Delegate address is the same as the sender address. |
 | `INVALID_AUTH_EXPIRY` | Authorization expiry time is in the past. |
 
-## Swap (Light)
+## Swap (Simple)
 Lightweight swap between tokens (ERC-20 or ERC-721) using simple signatures.
 
 ```Solidity
@@ -191,13 +191,13 @@ function cancel(uint256[] memory ids) external
 Peers may authorize other peers to make (sign) or take (send) Orders on their behalf. This is useful for delegating authorization to a trusted third party, whether a user account or smart contract. An authorization works for both sides of a Swap, regardless of whether the delegate signing or sending on ones behalf.
 
 ### Authorize
-Authorize a delegate account or contract to make or take Orders on the sender's behalf. **Not** available for **Swap (Light)**.
+Authorize a delegate account or contract to make (sign) or take (send) Orders on the sender's behalf. Only sender authorization, for example delegation to another smart contract to take orders, is supported for **Swap (Simple)**.
 ```Solidity
 function authorize(address delegate, uint256 expiry) external returns (bool)
 ```
 
 ### Revoke
-Revoke the authorization of a delegate account or contract. **Not** available for **Swap (Light)**.
+Revoke the authorization of a delegate account or contract.
 ```Solidity
 function revoke(address delegate) external returns (bool)
 ```
@@ -282,7 +282,7 @@ return {
 ```
 
 ### Simple
-For use in **Swap (Light)**. Signature parameters are passed directly to the function.
+For use in **Swap (Simple)**. Signature parameters are passed directly to the function.
 
 ```JavaScript
 const msg = web3.utils.soliditySha3(
