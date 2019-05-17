@@ -244,7 +244,7 @@ You can use `personal_sign` with **Full Swap** by using an EIP-712 hashing funct
 
 ```JavaScript
 const ethUtil = require('ethereumjs-util')
-const orderHashHex = hashes.getOrderHash(order); // See: tests/lib/hashes.js:60
+const orderHashHex = hashes.getOrderHash(order); // See: test/lib/hashes.js:60
 const sig = await web3.eth.sign(orderHashHex, signer);
 const { r, s, v } = ethUtil.fromRpcSig(sig);
 return {
@@ -264,14 +264,14 @@ const DOMAIN_VERSION = '2'
 const verifyingContract = '0x0...' // Address of the Swap Contract
 const sig = sigUtil.signTypedData(privateKey, {
   data: {
-    types, // See: tests/lib/constants.js:5
+    types, // See: test/lib/constants.js:5
     domain: {
       name: DOMAIN_NAME,
       version: DOMAIN_VERSION,
       verifyingContract,
     },
     primaryType: 'Order',
-    message: order, // See: tests/lib/orders.js:28
+    message: order, // See: test/lib/orders.js:28
   },
 });
 const { r, s, v } = ethUtil.fromRpcSig(sig)
@@ -311,13 +311,13 @@ const { r, s, v } = ethUtil.fromRpcSig(sig);
 | `Transferable.sol` | `contracts/lib` | Functions `send` `transferAny` `safeTransferAny` |
 | `Authorizable.sol` | `contracts/lib` | Functions `authorize` `revoke` `isAuthorized` |
 | `Verifiable.sol` | `contracts/lib` | Functions `isValid` `isValidSimple` |
-| `Swap.js` | `tests` | All tests for `Swap.sol` |
-| `assert.js` | `tests/lib` | Friendly names for common assertions |
-| `constants.js` | `tests/lib` | Constant values and defaults |
-| `hashes.js` | `tests/lib` | Functions for EIP-712 signature hashing |
-| `helpers.js` | `tests/lib` | Helpers to check allowances and balances |
-| `orders.js` | `tests/lib` | Generates Order objects for use in tests |
-| `signatures.js` | `tests/lib` | Generates various kinds of signatures |
+| `Swap.js` | `test` | All tests for `Swap.sol` |
+| `assert.js` | `test/lib` | Friendly names for common assertions |
+| `constants.js` | `test/lib` | Constant values and defaults |
+| `hashes.js` | `test/lib` | Functions for EIP-712 signature hashing |
+| `helpers.js` | `test/lib` | Helpers to check allowances and balances |
+| `orders.js` | `test/lib` | Generates Order objects for use in tests |
+| `signatures.js` | `test/lib` | Generates various kinds of signatures |
 
 ## Tooling
 
@@ -325,7 +325,7 @@ Contracts written in [solidity 0.5.8](https://solidity.readthedocs.io/en/v0.5.8/
 
 | Command | Description |
 | :--- | :--- |
-| `yarn test` | Run the tests found in `/tests`. |
+| `yarn test` | Run the tests found in `/test`. |
 | `yarn coverage` | Run a test coverage report. [Forked](https://github.com/dmosites/solidity-coverage) to support `address payable` syntax. |
 | `yarn hint` | Run a syntax linter for the Solidity code. |
 | `yarn lint` | Run a syntax linter for the JavaScript code. |

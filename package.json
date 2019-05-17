@@ -12,9 +12,9 @@
   "scripts": {
     "compile": "yarn truffle compile",
     "hint": "yarn solhint \"./contracts/**/*.sol\"",
-    "lint": "yarn eslint \"./tests/**/*.js\"",
+    "lint": "yarn eslint \"./test/**/*.js\"",
     "migrate": "yarn truffle migrate",
-    "test": "yarn truffle test \"./tests/Swap.js\""
+    "test": "yarn truffle test \"./test/Swap.js\""
   },
   "devDependencies": {
     "babel-eslint": "^10.0.1",
