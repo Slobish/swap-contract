@@ -5,7 +5,7 @@ The [Swap Protocol](https://swap.tech/whitepaper/) is a peer-to-peer protocol fo
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/swap-contract/community)
 
 ## Active Audit
-:warning: This repository is undergoing a security audit. In case of any issues, they will be addressed and communicated here.
+:warning: This repository is undergoing a security audit. In the case of any issues, they will be communicated here.
 
 ## Contents
 
