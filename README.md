@@ -2,8 +2,10 @@
 
 The [Swap Protocol](https://swap.tech/whitepaper/) is a peer-to-peer protocol for trading Ethereum tokens. This repository contains source code and tests for the Atomic Swap used by the Swap Protocol.
 
+[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/swap-contract/community)
+
 ## Active Audit
-:warning: This repository is currently undergoing a security audit. In the case that any issues arise, they will be addressed and communicated here.
+:warning: This repository is currently undergoing a security audit. In the case of any issues, they will be addressed and communicated here.
 
 ## Contents
 
