@@ -24,6 +24,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
   // Emitted on Swap
   event Swap(
     uint256 indexed nonce,
+    uint256 timestamp,
     address indexed makerWallet,
     uint256 makerParam,
     address makerToken,
@@ -32,8 +33,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
     address takerToken,
     address affiliateWallet,
     uint256 affiliateParam,
-    address affiliateToken,
-    uint256 timestamp
+    address affiliateToken
   );
 
   // Emitted on Cancel
