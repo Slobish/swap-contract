@@ -42,6 +42,12 @@ contract Swap is Authorizable, Transferable, Verifiable {
     address indexed makerWallet
   );
 
+  // Emitted on SetMinimumNonce
+  event SetMinimumNonce(
+    uint256 indexed nonce,
+    address indexed makerWallet
+  );
+
   /**
     * @notice Atomic Token Swap
     * @dev Determines type (ERC-20 or ERC-721) with ERC-165
@@ -68,7 +74,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
     require(makerOrderStatus[order.maker.wallet][order.nonce] != CANCELED,
       "ORDER_ALREADY_CANCELED");
 
-    require(order.nonce > makerMinimumNonce[order.maker.wallet],
+    require(order.nonce >= makerMinimumNonce[order.maker.wallet],
       "NONCE_INVALID");
 
     // Ensure the order taker is set and authorized
@@ -198,7 +204,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
     require(makerOrderStatus[makerWallet][nonce] == OPEN,
       "ORDER_UNAVAILABLE");
 
-    require(nonce > makerMinimumNonce[makerWallet],
+    require(nonce >= makerMinimumNonce[makerWallet],
     "NONCE_INVALID");
 
     // Ensure the order taker is set and authorized
@@ -288,6 +294,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
     */
   function setMinimumNonce(uint256 minimumNonce) external {
     makerMinimumNonce[msg.sender] = minimumNonce;
+    emit SetMinimumNonce(minimumNonce, msg.sender);
   }
 
 }

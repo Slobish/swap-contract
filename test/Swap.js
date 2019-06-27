@@ -22,6 +22,7 @@ contract('Swap', ([aliceAddress, bobAddress, carolAddress, davidAddress]) => {
   let swap
   let swapSimple
   let cancel
+  let setMinimumNonce
 
   orders.setKnownAccounts([
     aliceAddress,
@@ -44,6 +45,7 @@ contract('Swap', ([aliceAddress, bobAddress, carolAddress, davidAddress]) => {
           'swap(uint256,address,uint256,address,address,uint256,address,uint256,bytes32,bytes32,uint8)'
         ]
       cancel = swapContract.methods['cancel(uint256[])']
+      setMinimumNonce = swapContract.methods['setMinimumNonce(uint256)']
 
       orders.setVerifyingContract(swapAddress)
     })
@@ -411,29 +413,76 @@ contract('Swap', ([aliceAddress, bobAddress, carolAddress, davidAddress]) => {
     let _order
     let _signature
 
-    before('Alice creates an order with nonce "12345"', async () => {
-      const { order, signature } = await orders.getOrder({
+    before('Alice creates orders with nonces 1, 2, 3', async () => {
+      const {
+        order: orderOne,
+        signature: signatureOne,
+      } = await orders.getOrder({
         maker: {
           wallet: aliceAddress,
         },
-        nonce: 12345,
+        nonce: 1,
       })
-      _order = order
-      _signature = signature
+      const {
+        order: orderTwo,
+        signature: signatureTwo,
+      } = await orders.getOrder({
+        maker: {
+          wallet: aliceAddress,
+        },
+        nonce: 2,
+      })
+      const {
+        order: orderThree,
+        signature: signatureThree,
+      } = await orders.getOrder({
+        maker: {
+          wallet: aliceAddress,
+        },
+        nonce: 3,
+      })
+
+      _orderOne = orderOne
+      _signatureOne = signatureOne
+      _orderTwo = orderTwo
+      _signatureTwo = signatureTwo
+      _orderThree = orderThree
+      _signatureThree = signatureThree
     })
 
-    it('Checks that Alice is able to cancel order with nonce "12345"', async () => {
-      emitted(await cancel([_order.nonce], { from: aliceAddress }), 'Cancel')
+    it('Checks that Alice is able to cancel order with nonce 1', async () => {
+      emitted(await cancel([_orderOne.nonce], { from: aliceAddress }), 'Cancel')
     })
 
-    it('Checks that Alice is unable to cancel the same order twice', async () => {
-      none(await cancel([_order.nonce], { from: aliceAddress }), 'Cancel')
+    it('Checks that Alice is unable to cancel the nonce 1 twice', async () => {
+      none(await cancel([_orderOne.nonce], { from: aliceAddress }), 'Cancel')
     })
 
-    it('Checks that Bob is unable to take an order with nonce "12345"', async () => {
+    it('Checks that Bob is unable to take an order with nonce 1', async () => {
       await reverted(
-        swap(_order, _signature, { from: bobAddress }),
+        swap(_orderOne, _signatureOne, { from: bobAddress }),
         'ORDER_ALREADY_CANCELED'
+      )
+    })
+
+    it('Checks that Alice is able to set a minimum nonce of 4', async () => {
+      emitted(
+        await setMinimumNonce(4, { from: aliceAddress }),
+        'SetMinimumNonce'
+      )
+    })
+
+    it('Checks that Bob is unable to take an order with nonce 2', async () => {
+      await reverted(
+        swap(_orderTwo, _signatureTwo, { from: bobAddress }),
+        'NONCE_INVALID'
+      )
+    })
+
+    it('Checks that Bob is unable to take an order with nonce 3', async () => {
+      await reverted(
+        swap(_orderThree, _signatureThree, { from: bobAddress }),
+        'NONCE_INVALID'
       )
     })
 
