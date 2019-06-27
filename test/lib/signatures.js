@@ -57,13 +57,13 @@ module.exports = {
       { type: 'bytes1', value: '0x0' },
       { type: 'address', value: verifyingContract },
       { type: 'uint256', value: order.nonce },
+      { type: 'uint256', value: order.expiry },
       { type: 'address', value: order.maker.wallet },
       { type: 'uint256', value: order.maker.param },
       { type: 'address', value: order.maker.token },
       { type: 'address', value: order.taker.wallet },
       { type: 'uint256', value: order.taker.param },
-      { type: 'address', value: order.taker.token },
-      { type: 'uint256', value: order.expiry }
+      { type: 'address', value: order.taker.token }
     )
     const sig = await web3.eth.sign(ethUtil.bufferToHex(msg), signer)
     return ethUtil.fromRpcSig(sig)

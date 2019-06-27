@@ -169,29 +169,29 @@ contract Swap is Authorizable, Transferable, Verifiable {
     * @dev Determines type (ERC-20 or ERC-721) with ERC-165
     *
     * @param nonce uint256
+    * @param expiry uint256
     * @param makerWallet address
     * @param makerParam uint256
     * @param makerToken address
     * @param takerWallet address
     * @param takerParam uint256
     * @param takerToken address
-    * @param expiry uint256
+    * @param v uint8
     * @param r bytes32
     * @param s bytes32
-    * @param v uint8
     */
   function swapSimple(
     uint256 nonce,
+    uint256 expiry,
     address makerWallet,
     uint256 makerParam,
     address makerToken,
     address takerWallet,
     uint256 takerParam,
     address takerToken,
-    uint256 expiry,
+    uint8 v,
     bytes32 r,
-    bytes32 s,
-    uint8 v
+    bytes32 s
   )
       external payable
   {
@@ -230,14 +230,14 @@ contract Swap is Authorizable, Transferable, Verifiable {
     // Ensure the order signature is valid
     require(isValidSimple(
       nonce,
+      expiry,
       makerWallet,
       makerParam,
       makerToken,
       takerWallet,
       takerParam,
       takerToken,
-      expiry,
-      r, s, v
+      v, r, s
     ), "SIGNATURE_INVALID");
 
     // Mark the order TAKEN (0x01)

@@ -42,7 +42,7 @@ contract('Swap', ([aliceAddress, bobAddress, carolAddress, davidAddress]) => {
         ]
       swapSimple =
         swapContract.methods[
-          'swapSimple(uint256,address,uint256,address,address,uint256,address,uint256,bytes32,bytes32,uint8)'
+          'swapSimple(uint256,uint256,address,uint256,address,address,uint256,address,uint8,bytes32,bytes32)'
         ]
       cancel = swapContract.methods['cancel(uint256[])']
       setMinimumNonce = swapContract.methods['setMinimumNonce(uint256)']
@@ -642,16 +642,16 @@ contract('Swap', ([aliceAddress, bobAddress, carolAddress, davidAddress]) => {
       await reverted(
         swapSimple(
           _order.nonce,
+          _order.expiry,
           _order.maker.wallet,
           _order.maker.param,
           _order.maker.token,
           _order.taker.wallet,
           _order.taker.param,
           _order.taker.token,
-          _order.expiry,
+          _signature.v,
           _signature.r,
           _signature.s,
-          _signature.v,
           { from: davidAddress }
         ),
         'SENDER_UNAUTHORIZED'
@@ -662,16 +662,16 @@ contract('Swap', ([aliceAddress, bobAddress, carolAddress, davidAddress]) => {
       emitted(
         await swapSimple(
           _order.nonce,
+          _order.expiry,
           _order.maker.wallet,
           _order.maker.param,
           _order.maker.token,
           _order.taker.wallet,
           _order.taker.param,
           _order.taker.token,
-          _order.expiry,
+          _signature.v,
           _signature.r,
           _signature.s,
-          _signature.v,
           { from: bobAddress }
         ),
         'Swap'
@@ -701,16 +701,16 @@ contract('Swap', ([aliceAddress, bobAddress, carolAddress, davidAddress]) => {
       await reverted(
         swapSimple(
           order.nonce,
+          order.expiry,
           order.maker.wallet,
           order.maker.param,
           order.maker.token,
           order.taker.wallet,
           order.taker.param,
           order.taker.token,
-          order.expiry,
+          signature.v,
           signature.r,
           signature.s,
-          signature.v,
           { from: bobAddress }
         ),
         'INVALID'
@@ -742,16 +742,16 @@ contract('Swap', ([aliceAddress, bobAddress, carolAddress, davidAddress]) => {
       emitted(
         await swapSimple(
           order.nonce,
+          order.expiry,
           order.maker.wallet,
           order.maker.param,
           order.maker.token,
           order.taker.wallet,
           order.taker.param,
           order.taker.token,
-          order.expiry,
+          signature.v,
           signature.r,
           signature.s,
-          signature.v,
           { from: bobAddress, value: order.taker.param }
         ),
         'Swap'
@@ -799,16 +799,16 @@ contract('Swap', ([aliceAddress, bobAddress, carolAddress, davidAddress]) => {
       emitted(
         await swapSimple(
           order.nonce,
+          order.expiry,
           order.maker.wallet,
           order.maker.param,
           order.maker.token,
           order.taker.wallet,
           order.taker.param,
           order.taker.token,
-          order.expiry,
+          signature.v,
           signature.r,
           signature.s,
-          signature.v,
           { from: bobAddress }
         ),
         'Swap',
@@ -957,16 +957,16 @@ contract('Swap', ([aliceAddress, bobAddress, carolAddress, davidAddress]) => {
       emitted(
         await swapSimple(
           order.nonce,
+          order.expiry,
           order.maker.wallet,
           order.maker.param,
           order.maker.token,
           order.taker.wallet,
           order.taker.param,
           order.taker.token,
-          order.expiry,
+          signature.v,
           signature.r,
           signature.s,
-          signature.v,
           { from: carolAddress }
         ),
         'Swap'

@@ -46,9 +46,17 @@ Authorize peers to act on behalf of others.
 
 Compensate those who facilitate trades.
 
+### Trade with Anyone or Someone
+
+Let anyone take an order or set a specific taker.
+
 ### Batch Cancels
 
 Cancel multiple orders in a single transaction.
+
+### Minimum Nonce
+
+Invalidate all order nonces below a value.
 
 ## Definitions
 

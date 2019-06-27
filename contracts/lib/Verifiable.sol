@@ -130,14 +130,14 @@ contract Verifiable {
     * @param takerParam uint256
     * @param takerToken address
     * @param expiry uint256
+    * @param v uint8
     * @param r bytes32
     * @param s bytes32
-    * @param v uint8
     */
-  function isValidSimple(uint256 nonce,
+  function isValidSimple(uint256 nonce, uint256 expiry,
     address makerWallet, uint256 makerParam, address makerToken,
     address takerWallet, uint256 takerParam, address takerToken,
-    uint256 expiry, bytes32 r, bytes32 s, uint8 v
+    uint8 v, bytes32 r, bytes32 s
     ) internal view returns (bool) {
     return makerWallet == ecrecover(
       keccak256(abi.encodePacked(
@@ -146,13 +146,13 @@ contract Verifiable {
           byte(0),
           this,
           nonce,
+          expiry,
           makerWallet,
           makerParam,
           makerToken,
           takerWallet,
           takerParam,
-          takerToken,
-          expiry
+          takerToken
         )))),
       v, r, s);
   }
