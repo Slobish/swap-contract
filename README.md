@@ -5,33 +5,8 @@ The [Swap Protocol](https://swap.tech/whitepaper/) is a peer-to-peer protocol fo
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/swap-contract/community)
 
 ## Active Audit
+
 :warning: This repository is undergoing a security audit. In the case of any issues, they will be communicated here.
-
-## Contents
-
-* [Quick Start](#quick-start)
-* [Highlights](#highlights)
-* [Definitions](#definitions)
-* [Swap](#swap)
-  * [Arguments](#arguments)
-  * [Reverts](#reverts)
-* [Swap (Simple)](#swap-simple)
-  * [Arguments](#arguments-1)
-  * [Reverts](#reverts-1)
-* [Cancels](#cancels)
-* [Authorizations](#authorizations)
-  * [Authorize](#authorize)
-  * [Revoke](#revoke)
-* [Events](#events)
-  * [Swap](#swap-1)
-  * [Cancel](#cancel)
-* [Signatures](#signatures)
-  * [Simple](#simple)
-  * [Typed Data](#typed-data)
-* [Sources](#sources)
-* [TypeScript](#typescript)
-* [Commands](#commands)
-* [License](#license)
 
 ## Quick Start
 
@@ -41,7 +16,9 @@ $ cd swap-contract
 $ yarn
 $ yarn ganache-cli
 ```
+
 In another session...
+
 ```bash
 $ cd swap-contract
 $ yarn test
@@ -50,38 +27,45 @@ $ yarn test
 ## Highlights
 
 ### Atomic Swap
+
 Transact directly peer-to-peer on Ethereum.
 
 ### Fungible and Non-Fungible
+
 Swap between any two ERC20 or ERC721 assets.
 
 ### Typed Data Signatures
+
 Sign informative messages for improved transparency.
 
 ### Delegate Authorization
+
 Authorize peers to act on behalf of others.
 
 ### Affiliate Fees
+
 Compensate those who facilitate trades.
 
 ### Batch Cancels
+
 Cancel multiple orders in a single transaction.
 
 ## Definitions
 
-| Term | Definition |
-| :--- | :--- |
-| Swap | A transaction of multiple Token transfers that succeeds for all parties or fails. |
-| Token | A fungible (ERC-20) or non-fungible (ERC-721) Ethereum asset to be transferred. |
-| Maker | A party that sets and signs the parameters and price of an Order. |
-| Taker | A party that accepts the parameters of an Order and settles it on Ethereum. |
-| Affiliate | An *optional* party compensated by the Maker for facilitating a Swap. |
-| Delegate | An *optional* party authorized to make or take Orders on behalf of another party. |
-| Order | A specification of the tokens, amounts, and parties to a Swap. |
-| Signature | An asymmetric cryptographic signature of an Order. |
-| ID | A parameter of every Order that is unique to its Maker. |
+| Term      | Definition                                                                        |
+| :-------- | :-------------------------------------------------------------------------------- |
+| Swap      | A transaction of multiple Token transfers that succeeds for all parties or fails. |
+| Token     | A fungible (ERC-20) or non-fungible (ERC-721) Ethereum asset to be transferred.   |
+| Maker     | A party that sets and signs the parameters and price of an Order.                 |
+| Taker     | A party that accepts the parameters of an Order and settles it on Ethereum.       |
+| Affiliate | An _optional_ party compensated by the Maker for facilitating a Swap.             |
+| Delegate  | An _optional_ party authorized to make or take Orders on behalf of another party. |
+| Order     | A specification of the tokens, amounts, and parties to a Swap.                    |
+| Signature | An asymmetric cryptographic signature of an Order.                                |
+| ID        | A parameter of every Order that is unique to its Maker.                           |
 
 ## Swap
+
 Swap between tokens (ERC-20 or ERC-721) or ETH with all features using typed data signatures.
 
 ```Solidity
@@ -93,14 +77,14 @@ function swap(
 
 ### Arguments
 
-| Name | Type | Optionality | Description |
-| :--- | :--- | :--- | :--- |
-| `order` | `Order` | Required | Order struct as specified below. |
-| `signature` | `Signature` | Required | Signature struct as specified below. |
+| Name        | Type        | Optionality | Description                          |
+| :---------- | :---------- | :---------- | :----------------------------------- |
+| `order`     | `Order`     | Required    | Order struct as specified below.     |
+| `signature` | `Signature` | Required    | Signature struct as specified below. |
 
 ```Solidity
 struct Order {
-  uint256 id;      // A unique identifier for the Order
+  uint256 nonce;   // A single use identifier for the Order
   uint256 expiry;  // The expiry in seconds since unix epoch
   Party maker;     // The Maker of the Order who sets price
   Party taker;     // The Taker of the Order who accepts price
@@ -128,29 +112,31 @@ struct Signature {
 
 ### Reverts
 
-| Reason | Scenario |
-| :--- | :--- |
-| `SIGNER_UNAUTHORIZED` | Order has been signed by an account that has not been authorized to sign it. |
-| `SIGNATURE_INVALID` | Signature provided does not match the Order provided. |
-| `ORDER_ALREADY_TAKEN` | Order has already been taken by its `id` value. |
-| `ORDER_ALREADY_CANCELED` | Order has already been canceled by its `id` value. |
-| `ORDER_EXPIRED` | Order has an `expiry` lower than the current block time. |
-| `SENDER_UNAUTHORIZED` | Order has been sent by an account that has not been authorized to send it. |
-| `VALUE_MUST_BE_SENT` | Order indicates an ether Swap but insufficient ether was sent. |
-| `VALUE_MUST_BE_ZERO` | Order indicates a token Swap but ether was sent. |
-| `MAKER_INSUFFICIENT_ALLOWANCE` | Maker has not approved the Swap contract to transfer the balance. |
-| `MAKER_INSUFFICIENT_BALANCE` | Maker has an insufficient balance. |
-| `TAKER_INSUFFICIENT_ALLOWANCE` | Taker has not approved the Swap contract to transfer the balance. |
-| `TAKER_INSUFFICIENT_BALANCE` | Taker has an insufficient balance. |
-| `INVALID_AUTH_DELEGATE` | Delegate address is the same as the sender address. |
-| `INVALID_AUTH_EXPIRY` | Authorization expiry time is in the past. |
+| Reason                         | Scenario                                                                     |
+| :----------------------------- | :--------------------------------------------------------------------------- |
+| `SIGNER_UNAUTHORIZED`          | Order has been signed by an account that has not been authorized to sign it. |
+| `SIGNATURE_INVALID`            | Signature provided does not match the Order provided.                        |
+| `ORDER_ALREADY_TAKEN`          | Order has already been taken by its `nonce` value.                           |
+| `ORDER_ALREADY_CANCELED`       | Order has already been canceled by its `nonce` value.                        |
+| `ORDER_EXPIRED`                | Order has an `expiry` lower than the current block time.                     |
+| `NONCE_TOO_LOW`                | Nonce provided is below the minimum value set.                               |
+| `SENDER_UNAUTHORIZED`          | Order has been sent by an account that has not been authorized to send it.   |
+| `VALUE_MUST_BE_SENT`           | Order indicates an ether Swap but insufficient ether was sent.               |
+| `VALUE_MUST_BE_ZERO`           | Order indicates a token Swap but ether was sent.                             |
+| `MAKER_INSUFFICIENT_ALLOWANCE` | Maker has not approved the Swap contract to transfer the balance.            |
+| `MAKER_INSUFFICIENT_BALANCE`   | Maker has an insufficient balance.                                           |
+| `TAKER_INSUFFICIENT_ALLOWANCE` | Taker has not approved the Swap contract to transfer the balance.            |
+| `TAKER_INSUFFICIENT_BALANCE`   | Taker has an insufficient balance.                                           |
+| `INVALID_AUTH_DELEGATE`        | Delegate address is the same as the sender address.                          |
+| `INVALID_AUTH_EXPIRY`          | Authorization expiry time is in the past.                                    |
 
 ## Swap (Simple)
+
 Lightweight swap between tokens (ERC-20 or ERC-721) using simple signatures.
 
 ```Solidity
 function swapSimple(
-  uint256 id,
+  uint256 nonce,
   address makerWallet,
   uint256 makerParam,
   address makerToken,
@@ -166,52 +152,70 @@ function swapSimple(
 
 ### Arguments
 
-| Name | Type | Optionality | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | `uint256` | Required | A unique identifier for the Order. |
-| `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
-| `makerWallet` | `address` | Required | The Maker of the Order who sets price. |
-| `makerParam` | `uint256` | Required | The amount or identifier of the token the Maker sends. |
-| `makerToken` | `address` | Required | The address of the token the Maker sends. |
-| `takerParam` | `uint256` | Required | The amount or identifier of the token the Taker sends. |
-| `expiry` | `uint256` | Required | The expiry in seconds since unix epoch. |
-| `r` | `bytes32` | Required | The `r` value of an ECDSA signature. |
-| `s` | `bytes32` | Required | The `s` value of an ECDSA signature. |
-| `v` | `uint8` | Required | The `v` value of an ECDSA signature. |
+| Name          | Type      | Optionality | Description                                            |
+| :------------ | :-------- | :---------- | :----------------------------------------------------- |
+| `nonce`       | `uint256` | Required    | A single use identifier for the Order.                 |
+| `expiry`      | `uint256` | Required    | The expiry in seconds since unix epoch.                |
+| `makerWallet` | `address` | Required    | The Maker of the Order who sets price.                 |
+| `makerParam`  | `uint256` | Required    | The amount or identifier of the token the Maker sends. |
+| `makerToken`  | `address` | Required    | The address of the token the Maker sends.              |
+| `takerParam`  | `uint256` | Required    | The amount or identifier of the token the Taker sends. |
+| `expiry`      | `uint256` | Required    | The expiry in seconds since unix epoch.                |
+| `r`           | `bytes32` | Required    | The `r` value of an ECDSA signature.                   |
+| `s`           | `bytes32` | Required    | The `s` value of an ECDSA signature.                   |
+| `v`           | `uint8`   | Required    | The `v` value of an ECDSA signature.                   |
 
 ### Reverts
 
-| Reason | Scenario |
-| :--- | :--- |
-| `ORDER_EXPIRED` | Order has an `expiry` lower than the current block time. |
-| `ORDER_UNAVAILABLE` | Order has already been taken or canceled. |
-| `SIGNATURE_INVALID` | Signature provided does not match the Order provided. |
+| Reason              | Scenario                                                 |
+| :------------------ | :------------------------------------------------------- |
+| `ORDER_EXPIRED`     | Order has an `expiry` lower than the current block time. |
+| `ORDER_UNAVAILABLE` | Order has already been taken or canceled.                |
+| `NONCE_TOO_LOW`     | Nonce provided is below the minimum value set.           |
+| `SIGNATURE_INVALID` | Signature provided does not match the Order provided.    |
 
-## Cancels
-Provide an array of `ids`, unique by Maker address, to mark one or more Orders as canceled.
+## Cancel
+
+Provide an array of `nonces`, unique by Maker address, to mark one or more Orders as canceled.
+
 ```Solidity
-function cancel(uint256[] memory ids) external
+function cancel(uint256[] memory nonces) external
+```
+
+## Set a Minimum Nonce
+
+Provide a minimum value to invalidate all nonces below the value.
+
+```Solidity
+setMinimumNonce(uint256 minimumNonce) external
 ```
 
 ## Authorizations
+
 Peers may authorize other peers to make (sign) or take (send) Orders on their behalf. This is useful for delegating authorization to a trusted third party, whether a user account or smart contract. An authorization works for both sides of a Swap, regardless of whether the delegate signing or sending on ones behalf.
 
 ### Authorize
+
 Authorize a delegate account or contract to make (sign) or take (send) Orders on the sender's behalf. `swapSimple` only supports sender authorization, for example delegation to another smart contract to take orders.
+
 ```Solidity
 function authorize(address delegate, uint256 expiry) external returns (bool)
 ```
 
 ### Revoke
+
 Revoke the authorization of a delegate account or contract.
+
 ```Solidity
 function revoke(address delegate) external returns (bool)
 ```
 
 ## Events
+
 Ethereum transactions often emit events to indicate state changes or other provide useful information. The `indexed` keyword indicates that a filter may be set on the property. Learn more about events and filters in the [official documentation](https://solidity.readthedocs.io/en/v0.5.8/contracts.html#events).
 
 ### Swap
+
 Emitted with a successful Swap.
 
 ```Solidity
@@ -225,27 +229,43 @@ event Swap(
   address takerToken,
   address affiliateAddress,
   uint256 affiliateParam,
-  address affiliateToken
+  address affiliateToken,
+  uint256 timestamp
 );
 ```
 
 ### Cancel
+
 Emitted with a successful Cancel.
 
 ```Solidity
 event Cancel(
-  uint256 indexed id,
+  uint256 indexed nonce,
+  address indexed makerAddress
+);
+```
+
+### SetMinimumNonce
+
+Emitted with a successful SetMinimumNonce.
+
+```Solidity
+event SetMinimumNonce(
+  uint256 indexed nonce,
   address indexed makerAddress
 );
 ```
 
 ## Signatures
+
 When producing [ECDSA](https://hackernoon.com/a-closer-look-at-ethereum-signatures-5784c14abecc) signatures, Ethereum wallets prefix signed data with byte `\x19` to stay out of range of valid RLP so that a signature cannot be executed as a transaction. [EIP-191](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-191.md) standardizes this prefixing to include existing `personal_sign` behavior and [EIP-712](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md) implements it for structured data, which makes the data more transparent for the signer. Signatures are comprised of parameters `v`, `r`, and `s`. Read more about [Ethereum Signatures]().
 
 ### Typed Data
+
 For use in the `swap` function. The `Signature` struct is passed to the function including a byte `version` to indicate `personal_sign` (`0x45`) or `signTypedData` (`0x01`) so that hashes can be recreated correctly in contract code.
 
 #### Personal Sign
+
 You can use `personal_sign` with `swap` by using an EIP-712 hashing function.
 
 ```JavaScript
@@ -260,6 +280,7 @@ return {
 ```
 
 #### Sign Typed Data
+
 You can use `signTypedData` with `swap` by calling it directly. Read more about [EIP-712](https://medium.com/metamask/eip712-is-coming-what-to-expect-and-how-to-use-it-bb92fd1a7a26).
 
 ```JavaScript
@@ -288,6 +309,7 @@ return {
 ```
 
 ### Simple
+
 For use in the `swapSimple` function. Signature parameters are passed in directly.
 
 ```JavaScript
@@ -311,34 +333,35 @@ const { r, s, v } = ethUtil.fromRpcSig(sig);
 
 ## Sources
 
-| File | Location | Contents |
-| :--- | :--- | :--- |
-| `Swap.sol` | `contracts` | Functions `swap` `swapSimple` `cancel` |
-| `Transferable.sol` | `contracts/lib` | Functions `send` `transferAny` `safeTransferAny` |
-| `Authorizable.sol` | `contracts/lib` | Functions `authorize` `revoke` `isAuthorized` |
-| `Verifiable.sol` | `contracts/lib` | Functions `isValid` `isValidSimple` |
-| `Swap.js` | `test` | All tests for `Swap.sol` |
-| `assert.js` | `test/lib` | Friendly names for common assertions |
-| `constants.js` | `test/lib` | Constant values and defaults |
-| `hashes.js` | `test/lib` | Functions for EIP-712 signature hashing |
-| `helpers.js` | `test/lib` | Helpers to check allowances and balances |
-| `orders.js` | `test/lib` | Generates Order objects for use in tests |
-| `signatures.js` | `test/lib` | Generates various kinds of signatures |
+| File               | Location        | Contents                                                  |
+| :----------------- | :-------------- | :-------------------------------------------------------- |
+| `Swap.sol`         | `contracts`     | Functions `swap` `swapSimple` `cancel`, `setMinimumNonce` |
+| `Transferable.sol` | `contracts/lib` | Functions `send` `transferAny` `safeTransferAny`          |
+| `Authorizable.sol` | `contracts/lib` | Functions `authorize` `revoke` `isAuthorized`             |
+| `Verifiable.sol`   | `contracts/lib` | Functions `isValid` `isValidSimple`                       |
+| `Swap.js`          | `test`          | All tests for `Swap.sol`                                  |
+| `assert.js`        | `test/lib`      | Friendly names for common assertions                      |
+| `constants.js`     | `test/lib`      | Constant values and defaults                              |
+| `hashes.js`        | `test/lib`      | Functions for EIP-712 signature hashing                   |
+| `helpers.js`       | `test/lib`      | Helpers to check allowances and balances                  |
+| `orders.js`        | `test/lib`      | Generates Order objects for use in tests                  |
+| `signatures.js`    | `test/lib`      | Generates various kinds of signatures                     |
 
 ## TypeScript
+
 To interact with Swap using [TypeScript](https://www.typescriptlang.org/) you'll find a `swap.ts` module in the [wrappers](wrappers/) folder.
 
 ## Commands
 
 Contracts written in [solidity 0.5.8](https://solidity.readthedocs.io/en/v0.5.8/) and tests written in [Mocha / Chai](https://truffleframework.com/docs/truffle/testing/writing-tests-in-javascript) with JavaScript.
 
-| Command | Description |
-| :--- | :--- |
-| `yarn compile` | Build the contracts to `build` |
-| `yarn ts` | Build the TypeScript module to `wrappers` |
-| `yarn test` | Run the tests found in `test` |
-| `yarn hint` | Run a syntax linter for the Solidity code |
-| `yarn lint` | Run a syntax linter for the JavaScript code |
+| Command        | Description                                 |
+| :------------- | :------------------------------------------ |
+| `yarn compile` | Build the contracts to `build`              |
+| `yarn ts`      | Build the TypeScript module to `wrappers`   |
+| `yarn test`    | Run the tests found in `test`               |
+| `yarn hint`    | Run a syntax linter for the Solidity code   |
+| `yarn lint`    | Run a syntax linter for the JavaScript code |
 
 ## License
 

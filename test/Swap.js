@@ -42,7 +42,7 @@ contract('Swap', ([aliceAddress, bobAddress, carolAddress, davidAddress]) => {
         ]
       swapSimple =
         swapContract.methods[
-          'swap(uint256,address,uint256,address,address,uint256,address,uint256,bytes32,bytes32,uint8)'
+          'swapSimple(uint256,address,uint256,address,address,uint256,address,uint256,bytes32,bytes32,uint8)'
         ]
       cancel = swapContract.methods['cancel(uint256[])']
       setMinimumNonce = swapContract.methods['setMinimumNonce(uint256)']
@@ -454,7 +454,7 @@ contract('Swap', ([aliceAddress, bobAddress, carolAddress, davidAddress]) => {
       emitted(await cancel([_orderOne.nonce], { from: aliceAddress }), 'Cancel')
     })
 
-    it('Checks that Alice is unable to cancel the nonce 1 twice', async () => {
+    it('Checks that Alice is unable to cancel order with nonce 1 twice', async () => {
       none(await cancel([_orderOne.nonce], { from: aliceAddress }), 'Cancel')
     })
 
@@ -475,14 +475,14 @@ contract('Swap', ([aliceAddress, bobAddress, carolAddress, davidAddress]) => {
     it('Checks that Bob is unable to take an order with nonce 2', async () => {
       await reverted(
         swap(_orderTwo, _signatureTwo, { from: bobAddress }),
-        'NONCE_INVALID'
+        'NONCE_TOO_LOW'
       )
     })
 
     it('Checks that Bob is unable to take an order with nonce 3', async () => {
       await reverted(
         swap(_orderThree, _signatureThree, { from: bobAddress }),
-        'NONCE_INVALID'
+        'NONCE_TOO_LOW'
       )
     })
 

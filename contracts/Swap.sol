@@ -75,7 +75,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
       "ORDER_ALREADY_CANCELED");
 
     require(order.nonce >= makerMinimumNonce[order.maker.wallet],
-      "NONCE_INVALID");
+      "NONCE_TOO_LOW");
 
     // Ensure the order taker is set and authorized
     address finalTakerWallet;
@@ -180,7 +180,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
     * @param s bytes32
     * @param v uint8
     */
-  function swap(
+  function swapSimple(
     uint256 nonce,
     address makerWallet,
     uint256 makerParam,
@@ -205,7 +205,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
       "ORDER_UNAVAILABLE");
 
     require(nonce >= makerMinimumNonce[makerWallet],
-    "NONCE_INVALID");
+      "NONCE_TOO_LOW");
 
     // Ensure the order taker is set and authorized
     address finalTakerWallet;
