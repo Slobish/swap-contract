@@ -17,7 +17,7 @@ contract Verifiable {
   }
 
   struct Order {
-    uint256 id;
+    uint256 nonce;
     uint256 expiry;
     Party maker;
     Party taker;
@@ -42,7 +42,7 @@ contract Verifiable {
 
   bytes32 internal constant ORDER_TYPEHASH = keccak256(abi.encodePacked(
       "Order(",
-      "uint256 id,",
+      "uint256 nonce,",
       "uint256 expiry,",
       "Party maker,",
       "Party taker,",
@@ -87,7 +87,7 @@ contract Verifiable {
         domainSeparator,
         keccak256(abi.encode(
             ORDER_TYPEHASH,
-            order.id,
+            order.nonce,
             order.expiry,
             hashParty(order.maker),
             hashParty(order.taker),
@@ -122,7 +122,7 @@ contract Verifiable {
     * @notice Validates signature using a simple hash and verifyingContract.
     * @dev Determines type (ERC-20 or ERC-721) with ERC-165
     *
-    * @param id uint256
+    * @param nonce uint256
     * @param makerWallet address
     * @param makerParam uint256
     * @param makerToken address
@@ -134,7 +134,7 @@ contract Verifiable {
     * @param s bytes32
     * @param v uint8
     */
-  function isValidSimple(uint256 id,
+  function isValidSimple(uint256 nonce,
     address makerWallet, uint256 makerParam, address makerToken,
     address takerWallet, uint256 takerParam, address takerToken,
     uint256 expiry, bytes32 r, bytes32 s, uint8 v
@@ -145,7 +145,7 @@ contract Verifiable {
         keccak256(abi.encodePacked(
           byte(0),
           this,
-          id,
+          nonce,
           makerWallet,
           makerParam,
           makerToken,

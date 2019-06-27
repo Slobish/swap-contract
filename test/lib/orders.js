@@ -11,15 +11,15 @@ module.exports = {
   setVerifyingContract(verifyingContract) {
     this._verifyingContract = verifyingContract
   },
-  generateId() {
-    return Math.round(Math.random() * 10000)
+  generateNonce() {
+    return new Date().getTime()
   },
   generateExpiry() {
     return Math.round((new Date().getTime() + 60000) / 1000)
   },
   async getOrder({
     expiry = this.generateExpiry(),
-    id = this.generateId(),
+    nonce = this.generateNonce(),
     signer = NULL_ADDRESS,
     maker = defaults.Party,
     taker = defaults.Party,
@@ -27,7 +27,7 @@ module.exports = {
   }) {
     const order = {
       expiry,
-      id,
+      nonce,
       signer,
       maker: { ...defaults.Party, ...maker },
       taker: { ...defaults.Party, ...taker },
@@ -37,11 +37,7 @@ module.exports = {
     if (this._knownAccounts.indexOf(wallet) !== -1) {
       return {
         order,
-        signature: await signatures.getWeb3Signature(
-          order,
-          wallet,
-          this._verifyingContract,
-        ),
+        signature: await signatures.getWeb3Signature(order, wallet, this._verifyingContract),
       }
     }
     return { order }

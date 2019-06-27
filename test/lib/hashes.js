@@ -19,51 +19,43 @@ const ORDER_TYPEHASH = web3.utils.soliditySha3(stringify('Order') + stringify('P
 const PARTY_TYPEHASH = web3.utils.soliditySha3(stringify('Party'))
 
 function hashParty(party) {
-  return ethUtil.keccak256(abi.rawEncode(
-    ['bytes32', 'address', 'address', 'uint256'],
-    [
-      PARTY_TYPEHASH,
-      party.wallet,
-      party.token,
-      party.param,
-    ],
-  ))
+  return ethUtil.keccak256(
+    abi.rawEncode(
+      ['bytes32', 'address', 'address', 'uint256'],
+      [PARTY_TYPEHASH, party.wallet, party.token, party.param],
+    ),
+  )
 }
 
 function hashOrder(order) {
-  return ethUtil.keccak256(abi.rawEncode(
-    ['uint256', 'uint256', 'uint256', 'bytes32', 'bytes32', 'bytes32'],
-    [
-      ORDER_TYPEHASH,
-      order.id,
-      order.expiry,
-      hashParty(order.maker),
-      hashParty(order.taker),
-      hashParty(order.affiliate),
-    ],
-  ))
+  return ethUtil.keccak256(
+    abi.rawEncode(
+      ['uint256', 'uint256', 'uint256', 'bytes32', 'bytes32', 'bytes32'],
+      [
+        ORDER_TYPEHASH,
+        order.nonce,
+        order.expiry,
+        hashParty(order.maker),
+        hashParty(order.taker),
+        hashParty(order.affiliate),
+      ],
+    ),
+  )
 }
 
 function hashDomain(verifyingContract) {
-  return ethUtil.keccak256(abi.rawEncode(
-    ['bytes32', 'bytes32', 'bytes32', 'address'],
-    [
-      EIP712_DOMAIN_TYPEHASH,
-      ethUtil.keccak256(DOMAIN_NAME),
-      ethUtil.keccak256(DOMAIN_VERSION),
-      verifyingContract,
-    ],
-  ))
+  return ethUtil.keccak256(
+    abi.rawEncode(
+      ['bytes32', 'bytes32', 'bytes32', 'address'],
+      [EIP712_DOMAIN_TYPEHASH, ethUtil.keccak256(DOMAIN_NAME), ethUtil.keccak256(DOMAIN_VERSION), verifyingContract],
+    ),
+  )
 }
 
 module.exports = {
   getOrderHash(order, verifyingContract) {
     return ethUtil.keccak256(
-      Buffer.concat([
-        Buffer.from('1901', 'hex'),
-        hashDomain(verifyingContract),
-        hashOrder(order),
-      ]),
+      Buffer.concat([Buffer.from('1901', 'hex'), hashDomain(verifyingContract), hashOrder(order)]),
     )
   },
 }
