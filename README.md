@@ -228,17 +228,17 @@ Emitted with a successful Swap.
 
 ```Solidity
 event Swap(
-  uint256 indexed id,
-  address indexed makerAddress,
+  uint256 indexed nonce,
+  uint256 timestamp,
+  address indexed makerWallet,
   uint256 makerParam,
   address makerToken,
-  address takerAddress,
+  address indexed takerWallet,
   uint256 takerParam,
   address takerToken,
-  address affiliateAddress,
+  address affiliateWallet,
   uint256 affiliateParam,
-  address affiliateToken,
-  uint256 timestamp
+  address affiliateToken
 );
 ```
 
