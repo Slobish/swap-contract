@@ -46,7 +46,7 @@ contract('Swap', ([
       swapAddress = swapContract.address
 
       swap = swapContract.methods['swap((uint256,uint256,(address,address,uint256),(address,address,uint256),(address,address,uint256)),(address,bytes32,bytes32,uint8,bytes1))']
-      swapSimple = swapContract.methods['swapSimple(uint256,address,uint256,address,address,uint256,address,uint256,bytes32,bytes32,uint8)']
+      swapSimple = swapContract.methods['swap(uint256,address,uint256,address,address,uint256,address,uint256,bytes32,bytes32,uint8)']
       cancel = swapContract.methods['cancel(uint256[])']
 
       orders.setVerifyingContract(swapAddress)
@@ -353,7 +353,7 @@ contract('Swap', ([
     })
   })
 
-  describe('Swaps with Ether', () => {
+  describe('Swap with Ether', () => {
     const value = 1
 
     it('Checks allowance (Alice 200 AST)', async () => {
@@ -441,34 +441,56 @@ contract('Swap', ([
   })
 
   describe('Swap (Simple)', () => {
-    it('Checks that a Swap (Simple) succeeds', async () => {
+    let _order
+    let _signature
+
+    before('Alice creates an order for id "12345"', async () => {
       const { order } = await orders.getOrder({
         maker: {
           wallet: aliceAddress,
           token: tokenAST.address,
-          param: 100,
+          param: 50,
         },
         taker: {
           wallet: bobAddress,
           token: tokenDAI.address,
-          param: 20,
+          param: 10,
         },
       })
+      _order = order
+      _signature = await signatures.getSimpleSignature(order, aliceAddress, swapAddress)
+    })
 
-      const signature = await signatures.getSimpleSignature(order, aliceAddress, swapAddress)
+    it('Checks that Carol cannot take a (Simple) order on behalf of Bob', async () => {
+      await reverted(swapSimple(
+        _order.id,
+        _order.maker.wallet,
+        _order.maker.param,
+        _order.maker.token,
+        _order.taker.wallet,
+        _order.taker.param,
+        _order.taker.token,
+        _order.expiry,
+        _signature.r,
+        _signature.s,
+        _signature.v,
+        { from: davidAddress },
+      ), 'SENDER_UNAUTHORIZED')
+    })
 
+    it('Checks that a Swap (Simple) succeeds', async () => {
       emitted(await swapSimple(
-        order.id,
-        order.maker.wallet,
-        order.maker.param,
-        order.maker.token,
-        order.taker.wallet,
-        order.taker.param,
-        order.taker.token,
-        order.expiry,
-        signature.r,
-        signature.s,
-        signature.v,
+        _order.id,
+        _order.maker.wallet,
+        _order.maker.param,
+        _order.maker.token,
+        _order.taker.wallet,
+        _order.taker.param,
+        _order.taker.token,
+        _order.expiry,
+        _signature.r,
+        _signature.s,
+        _signature.v,
         { from: bobAddress },
       ), 'Swap')
     })
@@ -512,12 +534,12 @@ contract('Swap', ([
         maker: {
           wallet: aliceAddress,
           token: tokenAST.address,
-          param: 100,
+          param: 50,
         },
         taker: {
           wallet: bobAddress,
           token: '0x0000000000000000000000000000000000000000',
-          param: 20,
+          param: 10,
         },
       })
 
@@ -537,6 +559,54 @@ contract('Swap', ([
         signature.v,
         { from: bobAddress, value: order.taker.param },
       ), 'Swap')
+    })
+  })
+
+  describe('Swap with Public Orders (No Taker Set)', () => {
+    it('Checks that a Swap succeeds without a taker wallet set', async () => {
+      const { order, signature } = await orders.getOrder({
+        maker: {
+          wallet: aliceAddress,
+          token: tokenAST.address,
+          param: 25,
+        },
+        taker: {
+          token: tokenDAI.address,
+          param: 5,
+        },
+      })
+      emitted(await swap(order, signature, { from: bobAddress }), 'Swap', { takerWallet: bobAddress })
+    })
+
+    it('Checks that a Swap (Simple) succeeds without a taker wallet set', async () => {
+      const { order } = await orders.getOrder({
+        maker: {
+          wallet: aliceAddress,
+          token: tokenAST.address,
+          param: 25,
+        },
+        taker: {
+          token: tokenDAI.address,
+          param: 5,
+        },
+      })
+
+      const signature = await signatures.getSimpleSignature(order, aliceAddress, swapAddress)
+
+      emitted(await swapSimple(
+        order.id,
+        order.maker.wallet,
+        order.maker.param,
+        order.maker.token,
+        order.taker.wallet,
+        order.taker.param,
+        order.taker.token,
+        order.expiry,
+        signature.r,
+        signature.s,
+        signature.v,
+        { from: bobAddress },
+      ), 'Swap', { takerWallet: bobAddress })
     })
   })
 
@@ -627,11 +697,43 @@ contract('Swap', ([
       })
       emitted(await swap(order, signature, { from: bobAddress }), 'Swap')
     })
+  })
 
-    it('Checks balances...', async () => {
-      ok(await balances(aliceAddress, [[tokenTicket, 0], [tokenKitty, 0], [tokenDAI, 300]]), 'Alice balances are incorrect')
-      ok(await balances(bobAddress, [[tokenTicket, 1], [tokenKitty, 0], [tokenDAI, 700]]), 'Bob balances are incorrect')
-      ok(await balances(carolAddress, [[tokenKitty, 1]]), 'Carol balances are incorrect')
+  describe('Swap (Simple) (Non-Fungible)', () => {
+    it('Carol approves Swap to transfer her kitty collectible', async () => {
+      emitted(await tokenKitty.approve(swapAddress, 54321, { from: carolAddress }), 'Approval')
+    })
+
+    it('Checks that a Swap (Simple) (Non-Fungible) succeeds', async () => {
+      const { order } = await orders.getOrder({
+        maker: {
+          wallet: aliceAddress,
+          token: tokenAST.address,
+          param: 50,
+        },
+        taker: {
+          wallet: carolAddress,
+          token: tokenKitty.address,
+          param: 54321,
+        },
+      })
+
+      const signature = await signatures.getSimpleSignature(order, aliceAddress, swapAddress)
+
+      emitted(await swapSimple(
+        order.id,
+        order.maker.wallet,
+        order.maker.param,
+        order.maker.token,
+        order.taker.wallet,
+        order.taker.param,
+        order.taker.token,
+        order.expiry,
+        signature.r,
+        signature.s,
+        signature.v,
+        { from: carolAddress },
+      ), 'Swap')
     })
   })
 

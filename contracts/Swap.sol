@@ -21,21 +21,22 @@ contract Swap is Authorizable, Transferable, Verifiable {
   // Emitted on Swap
   event Swap(
     uint256 indexed id,
-    address indexed makerAddress,
+    address indexed makerWallet,
     uint256 makerParam,
     address makerToken,
-    address takerAddress,
+    address indexed takerWallet,
     uint256 takerParam,
     address takerToken,
-    address affiliateAddress,
+    address affiliateWallet,
     uint256 affiliateParam,
-    address affiliateToken
+    address affiliateToken,
+    uint256 timestamp
   );
 
   // Emitted on Cancel
   event Cancel(
     uint256 indexed id,
-    address indexed makerAddress
+    address indexed makerWallet
   );
 
   /**
@@ -64,10 +65,25 @@ contract Swap is Authorizable, Transferable, Verifiable {
     require(makerOrderStatus[order.maker.wallet][order.id] != CANCELED,
       "ORDER_ALREADY_CANCELED");
 
-    // Ensure the order sender is authorized
-    if (msg.sender != order.taker.wallet) {
-      require(isAuthorized(order.taker.wallet, msg.sender),
-        "SENDER_UNAUTHORIZED");
+    // Ensure the order taker is set and authorized
+    address finalTakerWallet;
+
+    if (order.taker.wallet == address(0)) {
+
+      // Set a null taker to be the order sender
+      finalTakerWallet = msg.sender;
+
+    } else {
+
+      // Ensure the order sender is authorized
+      if (msg.sender != order.taker.wallet) {
+        require(isAuthorized(order.taker.wallet, msg.sender),
+          "SENDER_UNAUTHORIZED");
+      }
+
+      // Set the taker to be the specified taker
+      finalTakerWallet = order.taker.wallet;
+
     }
 
     // Ensure the order signer is authorized
@@ -100,7 +116,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
       // Transfer token from taker to maker
       safeTransferAny(
         "TAKER",
-        order.taker.wallet,
+        finalTakerWallet,
         order.maker.wallet,
         order.taker.param,
         order.taker.token
@@ -112,7 +128,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
     safeTransferAny(
       "MAKER",
       order.maker.wallet,
-      order.taker.wallet,
+      finalTakerWallet,
       order.maker.param,
       order.maker.token
     );
@@ -130,8 +146,9 @@ contract Swap is Authorizable, Transferable, Verifiable {
 
     emit Swap(order.id,
       order.maker.wallet, order.maker.param, order.maker.token,
-      order.taker.wallet, order.taker.param, order.taker.token,
-      order.affiliate.wallet, order.affiliate.param, order.affiliate.token
+      finalTakerWallet, order.taker.param, order.taker.token,
+      order.affiliate.wallet, order.affiliate.param, order.affiliate.token,
+      block.timestamp
     );
   }
 
@@ -151,7 +168,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
     * @param s bytes32
     * @param v uint8
     */
-  function swapSimple(
+  function swap(
     uint256 id,
     address makerWallet,
     uint256 makerParam,
@@ -164,21 +181,35 @@ contract Swap is Authorizable, Transferable, Verifiable {
     bytes32 s,
     uint8 v
   )
-    external payable
+      external payable
   {
 
     // Ensure the order is not expired
     require(expiry > block.timestamp,
-      "ORDER_EXPIRED");
+        "ORDER_EXPIRED");
 
     // Ensure the order has not already been taken or canceled
     require(makerOrderStatus[makerWallet][id] == OPEN,
-      "ORDER_UNAVAILABLE");
+        "ORDER_UNAVAILABLE");
 
-    // Ensure the order sender is authorized
-    if (msg.sender != takerWallet) {
-      require(isAuthorized(takerWallet, msg.sender),
-        "SENDER_UNAUTHORIZED");
+    // Ensure the order taker is set and authorized
+    address finalTakerWallet;
+
+    if (takerWallet == address(0)) {
+
+      // Set a null taker to be the order sender
+      finalTakerWallet = msg.sender;
+
+    } else {
+
+      // Ensure the order sender is authorized
+      if (msg.sender != takerWallet) {
+        require(isAuthorized(takerWallet, msg.sender),
+          "SENDER_UNAUTHORIZED");
+      }
+
+      finalTakerWallet = takerWallet;
+
     }
 
     // Ensure the order signature is valid
@@ -214,17 +245,17 @@ contract Swap is Authorizable, Transferable, Verifiable {
         "VALUE_MUST_BE_ZERO");
 
       // Transfer token from taker to maker
-      transferAny(takerToken, takerWallet, makerWallet, takerParam);
+      transferAny(takerToken, finalTakerWallet, makerWallet, takerParam);
 
     }
 
     // Transfer token from maker to taker
-    transferAny(makerToken, makerWallet, takerWallet, makerParam);
+    transferAny(makerToken, makerWallet, finalTakerWallet, makerParam);
 
     emit Swap(id,
       makerWallet, makerParam, makerToken,
-      takerWallet, takerParam, takerToken,
-      address(0), 0, address(0)
+      finalTakerWallet, takerParam, takerToken,
+      address(0), 0, address(0), block.timestamp
     );
 
   }
