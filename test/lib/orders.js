@@ -37,7 +37,11 @@ module.exports = {
     if (this._knownAccounts.indexOf(wallet) !== -1) {
       return {
         order,
-        signature: await signatures.getWeb3Signature(order, wallet, this._verifyingContract),
+        signature: await signatures.getWeb3Signature(
+          order,
+          wallet,
+          this._verifyingContract
+        ),
       }
     }
     return { order }

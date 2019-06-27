@@ -63,7 +63,7 @@ module.exports = {
       { type: 'address', value: order.taker.wallet },
       { type: 'uint256', value: order.taker.param },
       { type: 'address', value: order.taker.token },
-      { type: 'uint256', value: order.expiry },
+      { type: 'uint256', value: order.expiry }
     )
     const sig = await web3.eth.sign(ethUtil.bufferToHex(msg), signer)
     return ethUtil.fromRpcSig(sig)

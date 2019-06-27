@@ -14,16 +14,20 @@ function stringify(type) {
   return `${str})`
 }
 
-const EIP712_DOMAIN_TYPEHASH = web3.utils.soliditySha3(stringify('EIP712Domain'))
-const ORDER_TYPEHASH = web3.utils.soliditySha3(stringify('Order') + stringify('Party'))
+const EIP712_DOMAIN_TYPEHASH = web3.utils.soliditySha3(
+  stringify('EIP712Domain')
+)
+const ORDER_TYPEHASH = web3.utils.soliditySha3(
+  stringify('Order') + stringify('Party')
+)
 const PARTY_TYPEHASH = web3.utils.soliditySha3(stringify('Party'))
 
 function hashParty(party) {
   return ethUtil.keccak256(
     abi.rawEncode(
       ['bytes32', 'address', 'address', 'uint256'],
-      [PARTY_TYPEHASH, party.wallet, party.token, party.param],
-    ),
+      [PARTY_TYPEHASH, party.wallet, party.token, party.param]
+    )
   )
 }
 
@@ -38,8 +42,8 @@ function hashOrder(order) {
         hashParty(order.maker),
         hashParty(order.taker),
         hashParty(order.affiliate),
-      ],
-    ),
+      ]
+    )
   )
 }
 
@@ -47,15 +51,24 @@ function hashDomain(verifyingContract) {
   return ethUtil.keccak256(
     abi.rawEncode(
       ['bytes32', 'bytes32', 'bytes32', 'address'],
-      [EIP712_DOMAIN_TYPEHASH, ethUtil.keccak256(DOMAIN_NAME), ethUtil.keccak256(DOMAIN_VERSION), verifyingContract],
-    ),
+      [
+        EIP712_DOMAIN_TYPEHASH,
+        ethUtil.keccak256(DOMAIN_NAME),
+        ethUtil.keccak256(DOMAIN_VERSION),
+        verifyingContract,
+      ]
+    )
   )
 }
 
 module.exports = {
   getOrderHash(order, verifyingContract) {
     return ethUtil.keccak256(
-      Buffer.concat([Buffer.from('1901', 'hex'), hashDomain(verifyingContract), hashOrder(order)]),
+      Buffer.concat([
+        Buffer.from('1901', 'hex'),
+        hashDomain(verifyingContract),
+        hashOrder(order),
+      ])
     )
   },
 }
