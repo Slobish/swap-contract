@@ -156,11 +156,10 @@ contract Swap is Authorizable, Transferable, Verifiable {
       );
     }
 
-    emit Swap(order.nonce,
+    emit Swap(order.nonce, block.timestamp,
       order.maker.wallet, order.maker.param, order.maker.token,
       finalTakerWallet, order.taker.param, order.taker.token,
-      order.affiliate.wallet, order.affiliate.param, order.affiliate.token,
-      block.timestamp
+      order.affiliate.wallet, order.affiliate.param, order.affiliate.token
     );
   }
 
@@ -267,10 +266,10 @@ contract Swap is Authorizable, Transferable, Verifiable {
     // Transfer token from maker to taker
     transferAny(makerToken, makerWallet, finalTakerWallet, makerParam);
 
-    emit Swap(nonce,
+    emit Swap(nonce, block.timestamp,
       makerWallet, makerParam, makerToken,
       finalTakerWallet, takerParam, takerToken,
-      address(0), 0, address(0), block.timestamp
+      address(0), 0, address(0)
     );
 
   }
