@@ -1,7 +1,6 @@
 pragma solidity >=0.5.8;
 pragma experimental ABIEncoderV2;
 
-
 contract Verifiable {
 
   bytes constant internal EIP191_HEADER = "\x19\x01";

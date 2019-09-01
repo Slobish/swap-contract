@@ -5,18 +5,16 @@ import "./lib/Authorizable.sol";
 import "./lib/Transferable.sol";
 import "./lib/Verifiable.sol";
 
-
 /**
 * @title Atomic swap contract used by the Swap Protocol
 */
 contract Swap is Authorizable, Transferable, Verifiable {
 
-  byte constant private OPEN = 0x00;
-  byte constant private TAKEN = 0x01;
-  byte constant private CANCELED = 0x02;
+  // Status that an order may hold
+  enum ORDER_STATUS { OPEN, TAKEN, CANCELED }
 
   // Maps makers to orders by nonce as TAKEN (0x01) or CANCELED (0x02)
-  mapping (address => mapping (uint256 => byte)) public makerOrderStatus;
+  mapping (address => mapping (uint256 => ORDER_STATUS)) public makerOrderStatus;
 
   // Maps makers to an optionally set minimum valid nonce
   mapping (address => uint256) public makerMinimumNonce;
@@ -67,11 +65,11 @@ contract Swap is Authorizable, Transferable, Verifiable {
       "ORDER_EXPIRED");
 
     // Ensure the order has not already been taken
-    require(makerOrderStatus[order.maker.wallet][order.nonce] != TAKEN,
+    require(makerOrderStatus[order.maker.wallet][order.nonce] != ORDER_STATUS.TAKEN,
       "ORDER_ALREADY_TAKEN");
 
     // Ensure the order has not already been canceled
-    require(makerOrderStatus[order.maker.wallet][order.nonce] != CANCELED,
+    require(makerOrderStatus[order.maker.wallet][order.nonce] != ORDER_STATUS.CANCELED,
       "ORDER_ALREADY_CANCELED");
 
     require(order.nonce >= makerMinimumNonce[order.maker.wallet],
@@ -107,7 +105,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
       "SIGNATURE_INVALID");
 
     // Mark the order TAKEN (0x01)
-    makerOrderStatus[order.maker.wallet][order.nonce] = TAKEN;
+    makerOrderStatus[order.maker.wallet][order.nonce] = ORDER_STATUS.TAKEN;
 
     // A null taker token is an order for ether
     if (order.taker.token == address(0)) {
@@ -200,7 +198,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
       "ORDER_EXPIRED");
 
     // Ensure the order has not already been taken or canceled
-    require(makerOrderStatus[makerWallet][nonce] == OPEN,
+    require(makerOrderStatus[makerWallet][nonce] == ORDER_STATUS.OPEN,
       "ORDER_UNAVAILABLE");
 
     require(nonce >= makerMinimumNonce[makerWallet],
@@ -240,7 +238,7 @@ contract Swap is Authorizable, Transferable, Verifiable {
     ), "SIGNATURE_INVALID");
 
     // Mark the order TAKEN (0x01)
-    makerOrderStatus[makerWallet][nonce] = TAKEN;
+    makerOrderStatus[makerWallet][nonce] = ORDER_STATUS.TAKEN;
 
     // A null taker token is an order for ether
     if (takerToken == address(0)) {
@@ -280,8 +278,8 @@ contract Swap is Authorizable, Transferable, Verifiable {
     */
   function cancel(uint256[] calldata nonces) external {
     for (uint256 i = 0; i < nonces.length; i++) {
-      if (makerOrderStatus[msg.sender][nonces[i]] == OPEN) {
-        makerOrderStatus[msg.sender][nonces[i]] = CANCELED;
+      if (makerOrderStatus[msg.sender][nonces[i]] == ORDER_STATUS.OPEN) {
+        makerOrderStatus[msg.sender][nonces[i]] = ORDER_STATUS.CANCELED;
         emit Cancel(nonces[i], msg.sender);
       }
     }
